@@ -90,7 +90,24 @@ start index.html         # Windows
 
 ## English
 
-**Nameless Blade** — a single-file, zero-dependency turn-based stealth-blade roguelike set in 184 AD China. Three classes (assassin / spearman / archer), six tilesets, three named-warrior bosses (Hua Xiong / Lü Bu / Dong Zhuo), affix gear, fifteen historical events and nine endings. Hand-drawn with Canvas, no assets, no engine, no build step: double-click `index.html` and play. Play online: https://stan-hypnos.github.io/wuming-daoke/ · itch.io: https://stan-hypnos.itch.io/wuming-daoke — free forever, feedback welcome via Issues.
+**Nameless Blade (无名刀客)** — a turn-based, tile-based, permadeath roguelike set in 184 AD China, the night the Yellow Turban Rebellion set the plains on fire. You are not a general. No army, no title, no name — one blade, and a body that bleeds. Ten battlefields take you from the first raid outside Changshe to Guandu.
+
+If you grew up on *Tales of Maj'Eyal*, *Dungeon Crawl Stone Soup* or *Jupiter Hell*, this is your kind of cruelty: every action is a turn, every enemy telegraphs its move, and every resource is a decision you can get wrong. There is no dodge button — only the tile you should not have been standing on.
+
+- **Three fragile classes.** Assassin — backstab for ×2.5 out of shadow, and lose half your kit the moment a line of sight touches you. Spearman — Momentum that dies with one broken chain. Archer — Aim built by standing still; step once with an enemy adjacent and you are a civilian with a bow.
+- **Bosses with patterns, not HP sponges.** Hua Xiong's cleave, Lü Bu's sweep, Dong Zhuo's ground-shatter: charged one turn, landed the next.
+- **Terrain is a combat system.** Fire spreads through tents and granaries, grass breaks sight lines, deep water refuses you, high ground extends vision, braziers light you up for every archer on the map.
+- **Eight enemy archetypes**, from levies that flee to archers that kite and firestarters who genuinely burn the map down.
+- **Affix gear with real costs.** Sharp (+3 ATK), Blood (heal on kill), Pierce (ignore 30% defense), Swift (cooldown refund), Heavy (+25% damage but +1 stamina per step) — plus a camp anvil for one more affix.
+- **Fifteen historical events, nine endings, ten scenarios.** Choices rewrite the map, the objective, the enemy roster.
+- **A codex, not a power curve.** New starting gear and challenge mode are all that carry between runs. No stat bonuses, no permanent upgrades — veteran knowledge is the whole meta.
+- **Three difficulties, per-turn autosave, one save slot, no undo.**
+
+**Zero dependencies.** The entire game is one 188KB `index.html`, drawn at runtime with Canvas 2D. No engine, no asset folder, no install, no build step. It runs offline from a USB stick in any modern browser.
+
+Play it now: https://stan-hypnos.github.io/wuming-daoke/ · itch.io: https://stan-hypnos.itch.io/wuming-daoke — free forever, updated forever, feedback welcome in Issues.
+
+Controls: `WASD/QEZC` (8-way) move · `F` attack · `1–6` abilities · left-click an enemy in range to strike · right-click inspect · `Tab` keys · `I` status · `B` bag · `K` level-up · `G` extract at the green exit · `Esc` settings · `M` mute. Keyboard + mouse.
 
 ## License
 
