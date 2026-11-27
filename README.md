@@ -12,7 +12,7 @@
   <img alt="license" src="https://img.shields.io/badge/license-MIT-8d8069?style=flat-square">
 </p>
 
-![无名刀客 · 三国](docs/social-preview.png)
+![无名刀客 · 三国](docs/social-preview.jpg)
 
 > **永久免费，长期更新。** 不卖皮肤、不做内购、不加体力条。你提的意见会进下一个版本。
 
