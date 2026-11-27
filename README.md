@@ -1,5 +1,7 @@
 # 无名刀客 · 三国
 
+**A turn-based, tile-based, permadeath roguelike in 184 AD China — fragile classes, telegraphed bosses, zero dependencies.**
+
 **你不是将军，没有兵。你不做官，没有名。你只有一把刀，和一具会死的身子。**
 
 一个 184 年开局、能一路杀到官渡的单文件回合制潜行刀战游戏。纯原生 JS + Canvas 手绘，**零依赖、零安装、双击就开**——同样一个 `index.html`，Mac、Windows、Linux 上跑的都是它。
