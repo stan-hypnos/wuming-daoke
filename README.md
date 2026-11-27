@@ -19,6 +19,7 @@
 ## 试玩 / Play
 
 - **在线直接玩**（手机只是看，操作要键盘）：https://stan-hypnos.github.io/wuming-daoke/
+- **itch.io**（英文页，可直接内嵌试玩）：https://stan-hypnos.itch.io/wuming-daoke
 - **本地玩**：下载 `index.html`，双击。没了。
 
 ![开局](screenshots/title.png)
@@ -89,7 +90,7 @@ start index.html         # Windows
 
 ## English
 
-**Nameless Blade** — a single-file, zero-dependency turn-based stealth-blade roguelike set in 184 AD China. Three classes (assassin / spearman / archer), six tilesets, three named-warrior bosses (Hua Xiong / Lü Bu / Dong Zhuo), affix gear, fifteen historical events and nine endings. Hand-drawn with Canvas, no assets, no engine, no build step: double-click `index.html` and play. Play online: https://stan-hypnos.github.io/wuming-daoke/ — free forever, feedback welcome via Issues.
+**Nameless Blade** — a single-file, zero-dependency turn-based stealth-blade roguelike set in 184 AD China. Three classes (assassin / spearman / archer), six tilesets, three named-warrior bosses (Hua Xiong / Lü Bu / Dong Zhuo), affix gear, fifteen historical events and nine endings. Hand-drawn with Canvas, no assets, no engine, no build step: double-click `index.html` and play. Play online: https://stan-hypnos.github.io/wuming-daoke/ · itch.io: https://stan-hypnos.itch.io/wuming-daoke — free forever, feedback welcome via Issues.
 
 ## License
 
