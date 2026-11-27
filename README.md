@@ -2,12 +2,16 @@
 
 **A hardcore turn-based roguelike in 184 AD China: fragile classes, telegraphed bosses, permadeath, zero deps.**
 
+**English UI included** — every menu, event, log line and item description ships in English. The game auto-detects your browser language; the `EN / 中文` button in the corner switches it instantly, mid-run.
+
 **你不是将军，没有兵。你不做官，没有名。你只有一把刀，和一具会死的身子。**
+
+**中英双语**：界面、事件、战斗日志、物品与名将台词全部有英文版，按浏览器语言自动切换，右下角 `EN / 中文` 可随时手动切换。
 
 一个 184 年开局、能一路杀到官渡的单文件回合制潜行刀战游戏。纯原生 JS + Canvas 手绘，**零依赖、零安装、双击就开**——同样一个 `index.html`，Mac、Windows、Linux 上跑的都是它。
 
 <p>
-  <img alt="single file" src="https://img.shields.io/badge/size-single%20file%20188KB-12100c?style=flat-square">
+  <img alt="single file" src="https://img.shields.io/badge/size-single%20file%20244KB-12100c?style=flat-square">
   <img alt="zero deps" src="https://img.shields.io/badge/dependencies-0-c8963e?style=flat-square">
   <img alt="canvas" src="https://img.shields.io/badge/render-HTML5%20Canvas-b8563a?style=flat-square">
   <img alt="free" src="https://img.shields.io/badge/price-永久免费-6f9e6a?style=flat-square">
@@ -105,7 +109,7 @@ If you grew up on *Tales of Maj'Eyal*, *Dungeon Crawl Stone Soup* or *Jupiter He
 - **A codex, not a power curve.** New starting gear and challenge mode are all that carry between runs. No stat bonuses, no permanent upgrades — veteran knowledge is the whole meta.
 - **Three difficulties, per-turn autosave, one save slot, no undo.**
 
-**Zero dependencies.** The entire game is one 188KB `index.html`, drawn at runtime with Canvas 2D. No engine, no asset folder, no install, no build step. It runs offline from a USB stick in any modern browser.
+**Zero dependencies.** The entire game is one 244KB `index.html`, drawn at runtime with Canvas 2D. No engine, no asset folder, no install, no build step. It runs offline from a USB stick in any modern browser.
 
 Play it now: https://stan-hypnos.github.io/wuming-daoke/ · itch.io: https://stan-hypnos.itch.io/wuming-daoke — free forever, updated forever, feedback welcome in Issues.
 
