@@ -1,6 +1,6 @@
 # 无名刀客 · 三国
 
-**A turn-based, tile-based, permadeath roguelike in 184 AD China — fragile classes, telegraphed bosses, zero dependencies.**
+**A hardcore turn-based roguelike in 184 AD China: fragile classes, telegraphed bosses, permadeath, zero deps.**
 
 **你不是将军，没有兵。你不做官，没有名。你只有一把刀，和一具会死的身子。**
 
