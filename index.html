@@ -1,0 +1,4608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>无名刀客 · 三国</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2312100c'/%3E%3Cpath d='M16 5 L20 15 L16 27 L12 15 Z' fill='%23c8963e'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#12100c; --panel:#1b1712; --panel2:#221d16;
+  --line:#3a3023; --ink:#d9cdb0; --dim:#8d8069;
+  --bronze:#c8963e; --blood:#b8563a; --jade:#6f9e6a; --fire:#e8842c;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+#app{
+  position:relative;
+  width:min(96vw,1340px); height:min(96vh,820px);
+  display:flex; flex-direction:column;
+  background:var(--panel); border:1px solid var(--line);
+  box-shadow:0 24px 80px rgba(0,0,0,.8);
+}
+#topbar{
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  padding:8px 16px; border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#241e16,#1a1510);
+  font-size:13px; letter-spacing:.5px;
+}
+#topbar .tb{display:flex; align-items:baseline; gap:6px; white-space:nowrap}
+#topbar .tb b{font-family:"SF Mono",Menlo,monospace; font-size:14px; color:var(--bronze); font-weight:600}
+#topbar .sep{width:1px; height:18px; background:var(--line)}
+main{flex:1; display:flex; min-height:0; overflow:hidden}
+#keybar{
+  flex:0 0 auto; display:flex; flex-wrap:wrap; gap:4px 15px; align-items:center;
+  padding:7px 16px; border-top:1px solid var(--line);
+  background:linear-gradient(180deg,#1a1510,#15110c);
+  font-size:11.5px; color:#7d7160; letter-spacing:.3px;
+}
+#keybar b{color:#bb9d6b; font-weight:600; font-family:"SF Mono",Menlo,monospace; font-size:11.5px; margin-right:3px}
+#left{flex:1; display:flex; flex-direction:column; min-width:0; min-height:0; padding:10px; gap:8px}
+#cv{width:auto; height:auto; max-width:100%; max-height:100%; margin:0 auto; display:block; background:#0d0b08; border:1px solid var(--line); cursor:crosshair; image-rendering:pixelated}
+#hint{font-size:12px; color:var(--dim); height:16px; white-space:nowrap; overflow:hidden}
+#side{
+  width:300px; flex-shrink:0; border-left:1px solid var(--line);
+  display:flex; flex-direction:column; background:var(--panel2);
+}
+#side h3{font-size:12px; color:var(--dim); font-weight:400; letter-spacing:3px; padding:10px 12px 6px}
+#skills{padding:0 10px 10px; display:grid; gap:5px}
+.skill{
+  border:1px solid var(--line); background:#1a1510; padding:6px 8px;
+  font-size:12px; cursor:pointer; display:flex; justify-content:space-between; gap:6px;
+  transition:background .12s,border-color .12s;
+}
+.skill:hover{background:#231c14; border-color:var(--bronze)}
+.skill.on{border-color:var(--bronze); background:#2b2216; box-shadow:inset 0 0 0 1px var(--bronze)}
+.skill.dead{opacity:.35; cursor:not-allowed}
+.skill .nm{color:var(--ink)}
+.skill .cs{font-family:"SF Mono",Menlo,monospace; color:var(--dim); font-size:11px}
+#log{
+  flex:1; overflow-y:auto; padding:8px 12px; font-size:12.5px; line-height:1.7;
+  border-top:1px solid var(--line);
+}
+#log p{margin:2px 0; color:var(--dim)}
+#log p.hi{color:var(--ink)}
+#log p.g{color:var(--jade)}
+#log p.r{color:var(--blood)}
+#log p.y{color:var(--bronze)}
+#overlay{
+  position:absolute; inset:0; display:none; z-index:20;
+  background:radial-gradient(ellipse at 50% 40%,#1a140e,#060504);
+  overflow-y:auto; padding:36px 32px;
+}
+#overlay.show{display:block}
+.wrap{max-width:720px; margin:0 auto}
+.tag{font-size:11px; letter-spacing:4px; color:var(--bronze); margin-bottom:10px}
+h1{font-size:34px; letter-spacing:8px; font-weight:400; margin-bottom:6px; color:#efe4c8}
+h2{font-size:19px; letter-spacing:3px; font-weight:400; margin-bottom:14px; color:#efe4c8}
+.lead{font-size:14px; line-height:2; color:#b6a988; margin-bottom:22px}
+.opt{
+  border:1px solid var(--line); background:#1a1510; padding:14px 16px; margin-bottom:10px;
+  cursor:pointer; transition:all .15s;
+}
+.opt:hover{border-color:var(--bronze); background:#241d15; transform:translateX(3px)}
+.opt .t{font-size:15px; color:#e8dcc0; margin-bottom:5px}
+.opt .d{font-size:12.5px; color:var(--dim); line-height:1.7}
+.opt .m{font-size:11px; color:var(--bronze); margin-top:6px; font-family:"SF Mono",Menlo,monospace}
+.clsgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px}
+.cls{border:1px solid var(--line); background:#1a1510; padding:16px; cursor:pointer; text-align:center; transition:all .15s}
+.cls:hover{border-color:var(--bronze); background:#241d15}
+.cls .n{font-size:19px; letter-spacing:4px; margin-bottom:8px}
+.cls .w{font-size:11px; color:var(--bronze); margin-bottom:10px}
+.cls .s{font-size:12px; color:var(--dim); line-height:1.7; text-align:left}
+.btn{
+  display:inline-block; border:1px solid var(--bronze); color:var(--bronze);
+  padding:9px 26px; font-size:14px; letter-spacing:3px; cursor:pointer; background:transparent;
+  font-family:inherit; transition:all .15s;
+}
+.btn:hover{background:var(--bronze); color:#12100c}
+.stats{display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin:18px 0}
+.st{display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding:7px 4px; font-size:13px}
+.st b{font-family:"SF Mono",Menlo,monospace; color:var(--bronze)}
+.epi{font-size:15px; line-height:2.2; color:#c9bb9c; border-left:2px solid var(--bronze); padding-left:16px; margin:18px 0}
+@media(max-width:900px){
+  main{flex-direction:column}
+  #left{flex:1 1 auto}
+  #cv{max-height:calc(100% - 26px)}
+  #side{width:auto; border-left:none; border-top:1px solid var(--line); height:152px; max-height:152px; overflow:auto}
+  #keybar{gap:4px 11px; font-size:11px; padding:6px 12px}
+  #keybar b{font-size:11px}
+  .clsgrid{grid-template-columns:1fr}
+}
+#tip{
+  position:fixed; z-index:40; display:none; pointer-events:none;
+  background:rgba(18,15,10,.97); border:1px solid var(--line);
+  padding:8px 11px; font-size:12px; line-height:1.65; max-width:280px;
+  box-shadow:0 8px 26px rgba(0,0,0,.7);
+}
+#tip .tn{color:#e8dcc0}
+#tip .tr{color:#8d8069; font-size:11px; letter-spacing:1px}
+#tip .bar{height:4px; background:#3a1a1a; margin:3px 0 6px}
+#tip .bar i{display:block; height:4px; background:#b8563a}
+#tb-alarm.pulse{animation:alarmP .9s ease-in-out 2}
+@keyframes alarmP{0%,100%{color:inherit;transform:scale(1)}35%{color:#e8842c;transform:scale(1.22)}}
+#cv{object-fit:contain}
+@media(max-width:900px){
+  #side{height:118px; max-height:118px}
+  #log{font-size:11.5px; line-height:1.5}
+  #skills{max-height:44px; overflow:auto}
+  #topbar{gap:8px; font-size:11px}
+  #keybar{font-size:10.5px; gap:3px 8px; padding:5px 8px}
+}
+.tabs{display:flex; gap:8px; margin-bottom:18px; border-bottom:1px solid var(--line); padding-bottom:10px}
+.tab{padding:6px 16px; font-size:13px; letter-spacing:2px; cursor:pointer; border:1px solid var(--line); color:var(--dim)}
+.tab.on{border-color:var(--bronze); color:var(--bronze); background:#241d15}
+.row{display:flex; justify-content:space-between; gap:10px; font-size:13px; padding:5px 0; border-bottom:1px solid rgba(58,48,35,.6)}
+.row b{font-family:"SF Mono",Menlo,monospace; color:var(--bronze); font-weight:500}
+.itm{border:1px solid var(--line); background:#1a1510; padding:8px 12px; margin-bottom:6px; font-size:12.5px; display:flex; justify-content:space-between; gap:8px}
+.itm .a{color:var(--bronze); cursor:pointer}
+.skrow{border:1px solid var(--line); background:#1a1510; padding:9px 12px; margin-bottom:6px; font-size:12.5px}
+.skrow .h{display:flex; justify-content:space-between; margin-bottom:3px}
+.skrow .plus{color:var(--bronze); cursor:pointer; font-family:"SF Mono",monospace}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="tb">年份 <b id="tb-year">184</b></div><span class="sep"></span>
+    <div class="tb"><b id="tb-cls">刺客</b> <b id="tb-lv">Lv.1</b></div><span class="sep"></span>
+    <div class="tb">气血 <b id="tb-hp">88/88</b></div>
+    <div class="tb">体力 <b id="tb-st">100</b></div>
+    <div class="tb" id="tb-res-wrap"><span id="tb-resname">暗劲</span> <b id="tb-res">0</b></div><span class="sep"></span>
+    <div class="tb">地形 <b id="tb-theme">—</b></div>
+    <div class="tb">警觉 <b id="tb-alarm">0</b></div>
+    <div class="tb">名望 <b id="tb-fame">0</b></div>
+    <div class="tb">技能点 <b id="tb-sp">0</b></div>
+    <div class="tb" style="margin-left:auto;color:var(--dim)" id="tb-task"></div>
+  </header>
+  <main>
+    <div id="left">
+      <canvas id="cv" width="836" height="684"></canvas>
+      <div id="hint"></div>
+    </div>
+    <aside id="side">
+      <h3>手段</h3>
+      <div id="skills"></div>
+      <h3>行迹</h3>
+      <div id="log"></div>
+    </aside>
+  </main>
+  <footer id="keybar">
+    <span><b>WASD/QEZC</b>移动</span>
+    <span><b>F</b>普攻</span>
+    <span><b>1-6</b>手段</span>
+    <span><b>左键</b>点敌即砍</span>
+    <span><b>右键</b>详情</span>
+    <span><b>Tab</b>键位</span>
+    <span><b>I</b>状态</span>
+    <span><b>B</b>行囊</span>
+    <span><b>K</b>加点</span>
+    <span><b>J</b>行止</span>
+    <span><b>R</b>喘息</span>
+    <span><b>空格</b>等待</span>
+    <span><b>G</b>撤离</span>
+    <span><b>Esc</b>设置</span>
+    <span><b>M</b>静音</span>
+  </footer>
+</div>
+<div id="tip"></div>
+<div id="overlay"></div>
+
+<script>
+"use strict";
+/* ===== 常量 ===== */
+const GW = 54, GH = 40, TS = 38;
+const VW = 22, VH = 18;                 // 视口格数
+let camX = 0, camY = 0;                 // 相机左上角
+const DIRS = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+const R4 = [[0,1],[1,0],[0,-1],[-1,0]];
+
+const C = {
+  floor:'#2a2419', floor2:'#251f16', wall:'#0d0b08',
+  water:'#1f3340', cover:'#3a3023', fire:'#e8842c',
+  grain:'#8a6a2f', exit:'#6f9e6a', seen:'#1a1611',
+  high:'#3c3a28', door:'#4a3826', barrel:'#3a2a18', rock:'#262421', shallow:'#294553'
+};
+
+/* 地形语义：0 地 1 墙 2 深水 3 草丛(掩体) 4 粮格 5 出口 6 火盆
+   7 高地 8 火盆(障碍) 9 门 10 木桶 11 岩石 12 浅滩 */
+const T_DOOR = 9, T_BARREL = 10, T_ROCK = 11, T_HIGH = 7, T_BRAZI = 8, T_SHALLOW = 12, T_TRAP = 13, T_BOAT = 14;
+const THEME_NAME = {camp:'军营', town:'城镇', palace:'皇宫', mountain:'山道', ford:'渡口', granary:'粮仓'};
+
+const RELCOL = { ally:'#79b06a', neutral:'#c9a344', hostile:'#c0503a' };
+const RELNAME = { ally:'友', neutral:'中立', hostile:'敌对' };
+
+const rand = n => Math.floor(Math.random()*n);
+const pick = a => a[rand(a.length)];
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const dist = (x1,y1,x2,y2) => Math.max(Math.abs(x1-x2),Math.abs(y1-y2));
+
+/* ===== 职业 ===== */
+const CLASSES = {
+  dagger:{
+    id:'dagger', name:'刺客', weapon:'匕首', glyph:'@',
+    hp:88, atk:17, def:4, eva:3, sight:9,
+    res:'focus', resName:'暗劲', resMax:40,
+    bio:'潜行、背刺、消失。一旦被发现，你就只剩一半。',
+    mastery:{}, ch:{}, skills:['backstab','hide','smoke','artery','ignite','vanish']
+  },
+  spear:{
+    id:'spear', name:'长兵', weapon:'枪', glyph:'@',
+    hp:120, atk:22, def:9, eva:1, sight:8,
+    res:'mom', resName:'势', resMax:50,
+    bio:'不犯错的职业。一次断连，势掉光，你就成了普通步兵。',
+    skills:['lunge','brace','setSpear','pierceLine','holdGate','onestrike']
+  },
+  bow:{
+    id:'bow', name:'射手', weapon:'弓', glyph:'@',
+    hp:82, atk:19, def:4, eva:5, sight:10,
+    res:'aim', resName:'准', resMax:60,
+    bio:'靠不动吃饭。敌人贴脸，你一动，准就归零。',
+    skills:['draw','stepShot','fireArrow','rapid','oneArrow','whistle']
+  }
+};
+
+/* ===== 技能元数据 ===== */
+const SKILLS = {
+  backstab:{name:'背刺', cls:'dagger', lv:1, st:8, res:0, cd:0, target:'enemy', range:1,
+    d:'从暗处出刀。隐蔽时伤害×2.5，出手后脱离隐蔽。'},
+  hide:{name:'匿形', cls:'dagger', lv:2, st:4, res:5, cd:3, target:'self',
+    d:'进入隐蔽。被敌人视线扫到即解除。'},
+  smoke:{name:'烟遁', cls:'dagger', lv:4, st:5, res:0, cd:5, target:'self',
+    d:'在周身扬烟，3回合内阻断视线。撤离专用。'},
+  artery:{name:'断脉', cls:'dagger', lv:6, st:12, res:6, cd:2, target:'enemy', range:1,
+    d:'割开血脉，每回合流血 8 点，持续 4 回合。'},
+  ignite:{name:'引火', cls:'dagger', lv:9, st:0, res:0, cd:0, target:'adj',
+    d:'点燃相邻一格的可燃物。'},
+  vanish:{name:'绝影', cls:'dagger', lv:12, st:6, res:15, cd:7, target:'self',
+    d:'断开所有敌人的锁定，退回暗处。'},
+
+  lunge:{name:'突刺', cls:'spear', lv:1, st:8, res:0, cd:0, target:'enemy', range:2,
+    d:'向前刺出，击中 2 格内的目标。命中得势。'},
+  brace:{name:'蓄势', cls:'spear', lv:2, st:0, res:0, cd:0, target:'self',
+    d:'原地不动，势+15。下回合首击伤害+50%。'},
+  setSpear:{name:'立枪', cls:'spear', lv:4, st:6, res:0, cd:3, target:'self',
+    d:'本回合减伤一半，并对近身来敌反击。'},
+  pierceLine:{name:'贯阵', cls:'spear', lv:6, st:10, res:10, cd:2, target:'dir',
+    d:'一枪贯穿直线三格内所有敌人，各受七成伤害。'},
+  holdGate:{name:'撑门', cls:'spear', lv:9, st:5, res:12, cd:4, target:'self',
+    d:'守住脚下，防御+6，三回合内不能被推开。'},
+  onestrike:{name:'一枪定', cls:'spear', lv:12, st:6, res:0, cd:8, target:'enemy', range:2,
+    d:'倾尽所有势。伤害 = 势 × 3，出手后势归零。'},
+
+  draw:{name:'引弓', cls:'bow', lv:1, st:0, res:0, cd:0, target:'self',
+    d:'本回合不攻击，准+15。'},
+  stepShot:{name:'退步射', cls:'bow', lv:2, st:6, res:0, cd:0, target:'enemy', range:8,
+    d:'后撤一格再放箭。这一箭不消耗准。'},
+  fireArrow:{name:'火箭', cls:'bow', lv:4, st:6, res:0, cd:2, target:'tile', range:8,
+    d:'射出一支燃矢，点燃落点周围一格。'},
+  rapid:{name:'连珠', cls:'bow', lv:6, st:10, res:0, cd:1, target:'enemy', range:8,
+    d:'一息两箭，各六成伤害，准-20。'},
+  oneArrow:{name:'一矢', cls:'bow', lv:9, st:4, res:0, cd:6, target:'enemy', range:9,
+    d:'倾尽准头。伤害 = 准 × 2.5，出手后准归零。'},
+  whistle:{name:'鸣镝', cls:'bow', lv:12, st:4, res:0, cd:0, target:'tile', range:8,
+    d:'鸣镝惊营。警觉+3，却把八格内的敌人引向落点。'}
+};
+
+/* ===== 敌人 ===== */
+const MOBS = {
+  levy:      {name:'黄巾贼', kind:'黄巾流民', lv:1, hp:26, atk:6,  def:1, spd:1, ai:'chase', range:1, color:'#b8563a', exp:1,
+              qi:10, weapon:'木棍', armor:'布衣', acc:4, eva:4, res:{fire:0,blade:0,pierce:0}},
+  levy2:     {name:'贼兵',   kind:'黄巾悍卒', lv:2, hp:32, atk:8,  def:2, spd:1, ai:'chase', range:1, color:'#c0663f', exp:1,
+              qi:15, weapon:'环首刀', armor:'布甲', acc:5, eva:5, res:{fire:0,blade:0,pierce:0}},
+  brute:     {name:'力士',   kind:'黄巾力士', lv:3, hp:48, atk:12, def:2, spd:1, ai:'chase', range:1, color:'#a8402a', exp:2,
+              qi:25, weapon:'铁锤', armor:'皮甲', acc:6, eva:3, res:{fire:0,blade:2,pierce:-1}},
+  soldier:   {name:'官军',   kind:'郡国兵', lv:2, hp:36, atk:9,  def:3, spd:1, ai:'chase', range:1, color:'#7a8a5a', exp:1,
+              qi:20, weapon:'长矛', armor:'皮甲', acc:6, eva:5, res:{fire:0,blade:1,pierce:1}},
+  archer:    {name:'弓手',   kind:'郡国弓手', lv:2, hp:22, atk:8,  def:1, spd:1, ai:'ranged', range:7, color:'#8a7a4a', exp:1,
+              qi:18, weapon:'猎弓', armor:'布衣', acc:8, eva:8, res:{fire:0,blade:0,pierce:-2}},
+  veteran:   {name:'老兵',   kind:'百战卒', lv:4, hp:48, atk:12, def:4, spd:1, ai:'chase', range:1, color:'#6a7a4a', exp:2,
+              qi:30, weapon:'环首刀', armor:'铁札甲', acc:8, eva:6, res:{fire:0,blade:3,pierce:2}},
+  guard:     {name:'守军',   kind:'营中卫士', lv:3, hp:42, atk:10, def:4, spd:1, ai:'guard', range:1, color:'#5a6a8a', exp:2,
+              qi:25, weapon:'长枪', armor:'两当铠', acc:7, eva:6, res:{fire:0,blade:2,pierce:3}},
+  elite:     {name:'精锐',   kind:'亲卫', lv:5, hp:90, atk:16, def:6, spd:1, ai:'chase', range:1, color:'#8a4a6a', exp:3,
+              qi:50, weapon:'长戟', armor:'铁甲', acc:10, eva:6, res:{fire:2,blade:4,pierce:3}},
+  sapper:    {name:'纵火兵', kind:'火卒', lv:2, hp:30, atk:4,  def:1, spd:1, ai:'objective', range:1, color:'#c8963e', exp:2,
+              qi:20, weapon:'火把', armor:'布衣', acc:4, eva:5, res:{fire:8,blade:0,pierce:0}},
+  boss:      {name:'名将',   kind:'一部之将', lv:8, hp:180,atk:20, def:8, spd:1, ai:'chase', range:1, color:'#d8c8a8', exp:5,
+              qi:80, weapon:'长刀', armor:'明光铠', acc:12, eva:7, res:{fire:3,blade:5,pierce:5}},
+  huaxiong:  {name:'华雄', kind:'西凉骁将', lv:8, hp:160, atk:19, def:7, spd:1, ai:'chase', range:1, color:'#a83a2a', exp:9,
+              qi:70, weapon:'大刀', armor:'铁甲', acc:10, eva:7, res:{fire:1,blade:4,pierce:2}, boss:'huaxiong'},
+  lvbu:      {name:'吕布', kind:'温侯', lv:12, hp:320, atk:28, def:10, spd:1, ai:'chase', range:1, color:'#d8b04a', exp:16,
+              qi:120, weapon:'方天画戟', armor:'兽面铠', acc:13, eva:10, res:{fire:3,blade:6,pierce:6}, boss:'lvbu'},
+  dongzhuo:  {name:'董卓', kind:'相国', lv:10, hp:260, atk:24, def:11, spd:1, ai:'chase', range:1, color:'#7a4a2a', exp:13,
+              qi:90, weapon:'重刀', armor:'金甲', acc:9, eva:4, res:{fire:2,blade:6,pierce:5}, boss:'dongzhuo'}
+};
+
+/* ===== 全局状态 ===== */
+let W = { year:184, factions:{}, flags:{}, codex:[] };   // 跨局
+let run = null;   // 单局角色
+let G = null;     // 当前战斗
+let UI = { mode:'move', pending:null, hover:null, cursor:null, aimOk:false, paused:false, panel:null, log:[] };
+
+/* ===== 势力 ===== */
+function initWorld(){
+  W = {
+    year:184, flags:{}, codex: [],
+    factions:{
+      han :{name:'汉室', mil:40, sup:45, mor:50, trust:30},
+      cao :{name:'曹操', mil:35, sup:50, mor:60, trust:25},
+      yuan:{name:'袁绍', mil:55, sup:60, mor:55, trust:20},
+      sun :{name:'孙氏', mil:30, sup:40, mor:55, trust:15},
+      liu :{name:'刘备', mil:15, sup:20, mor:70, trust:30},
+      lv  :{name:'吕布', mil:60, sup:25, mor:45, trust:10}
+    }
+  };
+}
+
+function cloneTask(t){ return JSON.parse(JSON.stringify(t)); }
+
+/* 势力状态反过来改写这一场的地形与敌人 */
+function tuneTask(cfg){
+  const f = W.factions;
+  cfg.note = cfg.note || '';
+  if(f.cao.mil>=62 && cfg.mobs){
+    cfg.mobs.push(['elite',1]);
+    cfg.note += '曹军势大，阵中多了一名亲卫。';
+  }
+  if(f.yuan.mor<=36){
+    cfg.waver = true;
+    cfg.note += '袁军军心散了，有人握着枪不肯上前。';
+  }
+  if(f.liu.sup>=45){
+    cfg.allies = (cfg.allies||[]).concat([['levy',2]]);
+    cfg.note += '城外百姓提着锄头跟上来。';
+  }
+  if(f.han.trust>=50) cfg.intel = true;
+  if(f.lv.mil>=68) cfg.note += '温侯的骑队就在左近，随时会踏进来。';
+  return cfg;
+}
+
+/* 每隔一个节点，势力自己也在动 */
+function facTick(){
+  const o=W.factions;
+  Object.keys(o).forEach(k=>{
+    const f=o[k];
+    f.mor = clamp(f.mor + (f.mil>55?1:-1), 0, 100);
+    f.sup = clamp(f.sup + (f.mor>62?1:-1), 0, 100);
+    f.trust = clamp(f.trust + (k==='han'?-0.5:0), 0, 100);
+  });
+}
+
+/* ===== 事件表 ===== */
+const EVENTS = [
+{ id:'changshe', y:184, m:2, title:'长社',
+  intro:'二月，黄巾波才围长社。皇甫嵩兵少，营中皆恐。夜里风起，火可以烧三十里。',
+  choices:[
+    { t:'随皇甫嵩纵火，烧黄巾营寨', d:'风大，火一起就收不住。你要在火里摸到营心，点着它，再活着出来。',
+      task:{theme:'camp', mood:'yellow', rooms:8, mobs:[['levy',7],['levy2',2],['brute',1]],
+        allies:[['guard',2]], allyNames:['皇甫嵩','汉军什长'],
+        obj:{type:'burn', need:2}, reward:{fame:16, fac:{han:6, cao:2}} } },
+    { t:'替黄巾偷官军的粮', d:'黄巾缺粮。官军的粮屯在营后，守得不严——至少今夜不严。',
+      task:{theme:'camp', mood:'imperial', rooms:8, mobs:[['soldier',6],['archer',2]],
+        obj:{type:'steal', item:'军粮'}, reward:{fame:14, fac:{han:-4}} } }
+  ]},
+
+{ id:'guangzong', y:184, m:8, title:'广宗',
+  intro:'张梁据广宗，城坚兵厚。他每日遣传令出城调兵，一日三骑。杀了这三骑，城里的兵就不知道该往哪走。',
+  choices:[
+    { t:'截杀出城的传令', d:'三个传令，不同路线，同一座城。你只够时间杀一个。',
+      task:{theme:'road', mood:'yellow', rooms:7, mobs:[['levy',5],['levy2',2]],
+        obj:{type:'kill', mob:'elite', eliteName:'传令校尉'}, reward:{fame:20, fac:{han:5}} } },
+    { t:'放黄巾残部一条生路', d:'城破在即。你要在官军合围之前，把西门的守军引开——然后从里面杀出来。',
+      task:{theme:'town', mood:'yellow', rooms:9, mobs:[['soldier',6],['veteran',2],['archer',1]],
+        obj:{type:'clear'}, reward:{fame:10, fac:{han:-6, liu:3}} } }
+  ]},
+
+{ id:'luoyang', y:189, m:9, title:'洛阳',
+  intro:'董卓入京，废立在天。宫里一夜之间换了主人，少帝被押在北宫。有人出钱，要一块玉，和一封能证明这玉从哪来的信。',
+  choices:[
+    { t:'夜入北宫，取传国玺', d:'北宫三进院落，每进都有甲士。玺在最后一进。拿了就走。',
+      task:{theme:'town', mood:'palace', rooms:9, mobs:[['guard',5],['veteran',2],['soldier',3]],
+        obj:{type:'steal', item:'传国玺'}, reward:{fame:22, fac:{cao:4, yuan:4}} } },
+    { t:'护送少帝出宫', d:'一个孩子，一辆车，一队追兵。你要把车赶到城门口，再从别的门出去。',
+      task:{theme:'town', mood:'palace', rooms:10, mobs:[['soldier',6],['archer',2],['veteran',1]], allies:[['guard',2]],
+        obj:{type:'escort'}, reward:{fame:18, fac:{han:10, liu:5}} } }
+  ]},
+
+{ id:'sishui', y:190, m:4, title:'汜水关',
+  intro:'关前十八路诸侯，关后是华雄。你要杀的不是华雄——是他身边那个知道粮道在哪的人。',
+  choices:[
+    { t:'斩华雄麾下的军需官', d:'华雄在中军，军需官在关后粮道。这两处隔着整座关。',
+      task:{theme:'pass', mood:'dong', rooms:7, mobs:[['veteran',5],['archer',3],['guard',1]],
+        obj:{type:'kill', mob:'elite', eliteName:'军需官'}, reward:{fame:26, fac:{yuan:6, cao:3}} } },
+    { t:'烧董卓的粮道', d:'粮车二十辆，停在关北。你烧两辆就够了——剩下十八辆会跟着一起烧。',
+      task:{theme:'road', mood:'dong', rooms:7, mobs:[['soldier',4],['veteran',3]],
+        obj:{type:'burn', need:2}, reward:{fame:24, fac:{yuan:5}} } },
+    { t:'正面挑战华雄', d:'他在关下列阵叫战。诸侯无人敢应。你要从营后摸进去，趁他披甲未齐。',
+      task:{theme:'camp', mood:'dong', rooms:8, boss:'huaxiong', mobs:[['veteran',4],['guard',2],['archer',2]],
+        obj:{type:'kill', boss:'huaxiong', eliteName:'华雄'}, reward:{fame:40, fac:{yuan:10, cao:6}} } }
+  ]},
+
+{ id:'jieqiao', y:191, m:12, title:'界桥',
+  intro:'公孙瓒的白马义从，天下精骑。袁绍在界桥结阵，鞠义的八百先登，要挡住这几千骑兵。',
+  choices:[
+    { t:'助袁绍，破白马义从', d:'白马义从的马脚在桥头。你要在桥头摸进去，把领骑的校尉斩了。',
+      task:{theme:'road', mood:'yuan', rooms:7, mobs:[['veteran',4],['archer',4],['elite',0]], allies:[['soldier',3]],
+        obj:{type:'kill', mob:'elite', eliteName:'白马校尉'}, reward:{fame:24, fac:{yuan:9, cao:2}} } },
+    { t:'助公孙瓒突围', d:'桥断了。公孙瓒困在东岸，桥头全是袁绍的枪。',
+      task:{theme:'ford', mood:'gongsun', rooms:8, mobs:[['veteran',5],['archer',2],['guard',2]],
+        obj:{type:'clear'}, reward:{fame:18, fac:{yuan:-8, liu:2}} } }
+  ]},
+
+{ id:'xuzhou', y:193, m:6, title:'徐州',
+  intro:'曹操东征，徐州十县被屠。有人说这是复仇，有人说这是粮道。城里还有人在等。',
+  choices:[
+    { t:'开城放百姓出城', d:'城门的守军只有二十人，但你知道他们换班的时候。',
+      task:{theme:'town', mood:'cao', rooms:10, mobs:[['soldier',5],['guard',4],['archer',2]], neutrals:[['levy',3]],
+        obj:{type:'steal', item:'东门钥'}, reward:{fame:20, fac:{cao:-8, liu:6}} } },
+    { t:'为曹操断后，断刘备的粮', d:'刘备账上的粮只够七天。断了他，徐州就完了。',
+      task:{theme:'granary', mood:'liu', rooms:8, mobs:[['soldier',5],['veteran',3]],
+        obj:{type:'burn', need:2}, reward:{fame:16, fac:{cao:8, liu:-8}} } }
+  ]},
+
+{ id:'yingjia', y:196, m:8, title:'洛阳 · 残城',
+  intro:'天子还在洛阳。洛阳已经没有城了。杨奉、董承的人马各怀心思，而曹操在许，等一句话。',
+  choices:[
+    { t:'护送天子东行', d:'从洛阳到许，中间是三百里无人区，和几支不知归属的兵马。',
+      task:{theme:'road', mood:'han', rooms:9, mobs:[['soldier',6],['archer',3],['veteran',2]],
+        obj:{type:'escort'}, reward:{fame:26, fac:{han:12, cao:10}} } },
+    { t:'把一封信送给袁绍', d:'信在怀里的分量，比刀重。你只有走出去，它才有用。',
+      task:{theme:'road', mood:'yuan', rooms:9, mobs:[['soldier',4],['archer',3]],
+        obj:{type:'steal', item:'密信'}, reward:{fame:18, fac:{yuan:10, cao:-6}} } }
+  ]},
+
+{ id:'xiapi', y:198, m:12, title:'下邳',
+  intro:W=>('曹操围了三个月，城里有水，没有粮。吕布还在白门楼上。'+
+    (W.flags['kill_huaxiong']? '你在汜水关赢过一阵，曹营里已经有人认得你这张脸——这既是好事，也是祸事。' : 
+     '没人认得你。这是你唯一比吕布占便宜的地方。')),
+  choices:[
+    { t:'开城门，擒吕布', d:'门在水下。钥匙在守将身上。你只有一次机会。白门楼上，温侯还在。',
+      task:{theme:'town', mood:'cao', rooms:9, boss:'lvbu', mobs:[['guard',5],['veteran',4],['archer',2]],
+        allies:[['elite',1]], allyNames:['许褚'],
+        obj:{type:'kill', boss:'lvbu', eliteName:'吕布'}, reward:{fame:50, fac:{cao:16, lv:-16}} } },
+    { t:'助吕布突围', d:'三个人，一匹马，六十个追兵。从北门出去，往东。',
+      task:{theme:'town', mood:'lv', rooms:8, mobs:[['veteran',5],['elite',1]],
+        obj:{type:'clear'}, reward:{fame:20, fac:{cao:-10, lv:8}} } },
+    { t:'留下守城，替温侯拖住曹军', req:W=>W.factions.lv.trust>=55,
+      d:'温侯信得过你，才把北门交给你。守到天亮，他就能走。',
+      task:{theme:'town', mood:'lv', rooms:9, mobs:[['guard',5],['soldier',4],['archer',3]],
+        obj:{type:'protect', need:2}, reward:{fame:26, fac:{cao:-14, lv:12}} } }
+  ]},
+
+{ id:'yecheng', y:199, m:10, title:'邺城',
+  intro:'袁绍的粮，存在邺城外的营里。守粮的督官每十日换一次人。这一任，姓陈。',
+  choices:[
+    { t:'夜入粮营，刺督粮官', d:'营中一千人，督粮的只有一个。他睡在中帐。',
+      task:{theme:'granary', mood:'yuan', rooms:8, mobs:[['levy2',5],['guard',4],['archer',2]],
+        obj:{type:'kill', mob:'elite', eliteName:'督粮都督'}, reward:{fame:24, fac:{cao:10, yuan:-10}} } },
+    { t:'守粮三日，等袁军自乱', d:'粮营被小股人马袭扰。你要守三个粮堆，撑到援军到。',
+      task:{theme:'granary', mood:'yuan', rooms:8, mobs:[['sapper',4],['veteran',4],['archer',2]],
+        obj:{type:'protect', need:2}, reward:{fame:20, fac:{yuan:8, cao:-6}} } }
+  ]},
+
+{ id:'wuchao', y:200, m:10, title:'乌巢',
+  intro:W=>('淳于琼守乌巢，粮全在这里。曹操亲率五千人，夜行百里。这一夜，决定了往后十年。'+
+    (W.factions.han.trust>=60 ? '你身上有汉室的腰牌，曹营的斥候见了会让路。' :
+     W.factions.yuan.mor<=40 ? '袁营里已经有人在传粮草不够。守粮的人，比攻的人更想跑。' :
+     '没人认得你。你从哪边都能进，也从哪边都出不来。')),
+  choices:[
+    { t:'为曹操烧乌巢', d:'摸进粮营，点燃两个粮堆，然后从北道出去。火会替你喊人。',
+      task:{theme:'granary', mood:'cao', rooms:9, mobs:[['levy2',5],['guard',4],['archer',2],['elite',1]],
+        obj:{type:'burn', need:2}, reward:{fame:40, fac:{cao:20, yuan:-20}} } },
+    { t:'为淳于琼守粮', d:'三个粮堆，一队纵火兵，和一整夜的警报。守住粮，袁绍就不崩。',
+      task:{theme:'granary', mood:'yuan', rooms:9, mobs:[['sapper',5],['veteran',4],['archer',2]],
+        allies:[['veteran',2]], allyNames:['淳于琼','袁军督粮'],
+        obj:{type:'protect', need:2}, reward:{fame:34, fac:{yuan:16, cao:-16}} } },
+    { t:'开东门，卖给曹操', d:'没人知道是你。但两边都会想让你永远闭嘴。',
+      task:{theme:'granary', mood:'betray', rooms:9, mobs:[['guard',5],['veteran',3],['archer',2]],
+        obj:{type:'steal', item:'东门钥'}, reward:{fame:20, fac:{cao:12, yuan:-24}} } }
+  ]}
+];
+
+/* ===== 第四批：支线节点 ===== */
+EVENTS.push(
+{ id:'zaozhao', y:191, m:6, title:'酸枣',
+  intro:'联军在酸枣扎了三个月，粮台堆得比营帐还高。谁在管这些粮，账上写得漂亮，仓里不一定有。',
+  choices:[
+    { t:'混进粮台，抄一份账册', req:W=>W.factions.han.trust>=40,
+      d:'官军给了你通行的一枚木牌。进去容易，出来要有人信你。',
+      task:{theme:'granary', mood:'han', rooms:8, mobs:[['guard',4],['soldier',4]],
+        obj:{type:'steal', item:'粮台账册'}, reward:{fame:18, fac:{han:8, cao:2}} } },
+    { t:'替袁绍盯住曹操的粮道', d:'袁本初要知道曹孟德的粮从哪来。你只要画一张图。',
+      task:{theme:'road', mood:'yuan', rooms:8, mobs:[['soldier',4],['archer',3]],
+        obj:{type:'steal', item:'粮道图'}, reward:{fame:16, fac:{yuan:10, cao:-8}} } }
+  ]},
+
+{ id:'changan', y:192, m:4, title:'长安',
+  intro:'董卓住在郿坞，甲士三千，出门要清道。王允在朝上说笑，回家就把门关上。',
+  choices:[
+    { t:'夜入相府，取董卓的命', req:W=>W.flags['luoyang_0'] || W.factions.han.trust>=55,
+      d:'你进过一次北宫，认得那条路。相府的墙比宫墙还高，守卫却一样会困。',
+      task:{theme:'palace', mood:'dong', rooms:9, boss:'dongzhuo', mobs:[['guard',6],['veteran',3]],
+        obj:{type:'kill', boss:'dongzhuo', eliteName:'董卓'}, reward:{fame:55, fac:{han:20, cao:10}} } },
+    { t:'把被囚的百官带出城', d:'十几个人，一辆车装不下。你只能带走最要紧的那几个。',
+      task:{theme:'palace', mood:'dong', rooms:9, mobs:[['guard',4],['soldier',5],['archer',2]],
+        obj:{type:'escort'}, reward:{fame:22, fac:{han:12, liu:6}} } }
+  ]},
+
+{ id:'puyang', y:194, m:8, title:'濮阳',
+  intro:'曹操攻濮阳，吕布守。城外三十里，曹军的粮车每天来一次，护送的只有一队骑兵。',
+  choices:[
+    { t:'伏击曹军的粮车', req:W=>W.factions.lv.trust>=40 || W.flags['xiapi_1'],
+      d:'车轮压过土路的声音，比人先到。你只需点第一把火。',
+      task:{theme:'road', mood:'cao', rooms:8, mobs:[['soldier',4],['veteran',3],['archer',2]],
+        obj:{type:'burn', need:2}, reward:{fame:22, fac:{lv:10, cao:-10}} } },
+    { t:'把吕布的虚实卖给曹操', d:'城里有几处门、几处粮，曹操出得起价。',
+      task:{theme:'town', mood:'lv', rooms:8, mobs:[['guard',4],['levy2',3]],
+        obj:{type:'steal', item:'城防图'}, reward:{fame:18, fac:{cao:10, lv:-10}} } }
+  ]},
+
+{ id:'xudu', y:197, m:4, title:'许都',
+  intro:'天子在许，宫墙是新修的，墙里的人是旧的。有人要烧宫，有人要劫狱，有人只是想活着。',
+  choices:[
+    { t:'压下这场暴乱', req:W=>W.factions.liu.sup>=40,
+      d:'城里的百姓认得你。他们肯听你一句话，也肯替你挡一挡。',
+      task:{theme:'town', mood:'han', rooms:9, mobs:[['soldier',4],['guard',3],['archer',2]], neutrals:[['levy',4]],
+        obj:{type:'protect', need:2}, reward:{fame:20, fac:{han:10, liu:8}} } },
+    { t:'趁乱取走一封密诏', d:'诏书在宫里第三进。写下它的人，已经不打算活。',
+      task:{theme:'palace', mood:'han', rooms:9, mobs:[['guard',5],['veteran',2]],
+        obj:{type:'steal', item:'衣带诏'}, reward:{fame:24, fac:{han:12, cao:-10}} } }
+  ]},
+
+{ id:'yejun', y:199, m:4, title:'邺城 · 军议',
+  intro:'袁绍的将在堂上吵了三天。张郃坐在最末，一句话没说过。他帐下的兵，还有粮。',
+  choices:[
+    { t:'劝张郃倒戈', req:W=>W.factions.yuan.mor<=45,
+      d:'他不想反，但他也不想死。你只要把他带出这座营。',
+      task:{theme:'granary', mood:'yuan', rooms:8, mobs:[['guard',4],['veteran',4],['archer',2]],
+        allies:[['veteran',1]], allyNames:['张郃'],
+        obj:{type:'escort'}, reward:{fame:28, fac:{cao:12, yuan:-14}} } },
+    { t:'替袁绍稳住诸将', d:'三个人各有各的算盘。你要让他们相信，明天还有粮。',
+      task:{theme:'granary', mood:'yuan', rooms:8, mobs:[['sapper',4],['levy2',4]],
+        obj:{type:'protect', need:2}, reward:{fame:22, fac:{yuan:10, cao:-8}} } }
+  ]}
+);
+EVENTS.sort((a,b)=> (a.y-b.y) || (a.m-b.m));
+
+/* ===== 地图生成 ===== */
+function rectOverlap(a,b,p){
+  return !(a.x+a.w+p<=b.x || b.x+b.w+p<=a.x || a.y+a.h+p<=b.y || b.y+b.h+p<=a.y);
+}
+
+function carveWide(tiles, x, y, w, h){
+  for(let yy=y; yy<y+h; yy++) for(let xx=x; xx<x+w; xx++)
+    if(yy>=0&&yy<GH&&xx>=0&&xx<GW) tiles[yy][xx]=0;
+}
+
+function corridorH(tiles, x1, x2, y){
+  for(let x=Math.min(x1,x2); x<=Math.max(x1,x2); x++){
+    tiles[y][x]=0; if(y+1<GH) tiles[y+1][x]=0;
+  }
+}
+function corridorV(tiles, y1, y2, x){
+  for(let y=Math.min(y1,y2); y<=Math.max(y1,y2); y++){
+    tiles[y][x]=0; if(x+1<GW) tiles[y][x+1]=0;
+  }
+}
+
+function tilePass(t){ return t!==1 && t!==6 && t!==T_BARREL && t!==T_ROCK; }
+
+function reachSet(tiles, sx, sy){
+  const seen = new Set([sy*GW+sx]);
+  const q = [[sx,sy]];
+  while(q.length){
+    const [x,y] = q.shift();
+    for(const [dx,dy] of R4){
+      const nx=x+dx, ny=y+dy;
+      if(nx<0||ny<0||nx>=GW||ny>=GH) continue;
+      if(!tilePass(tiles[ny][nx])) continue;
+      const k = ny*GW+nx;
+      if(seen.has(k)) continue;
+      seen.add(k); q.push([nx,ny]);
+    }
+  }
+  return seen;
+}
+
+/* 生成后必检：出口、粮堆、任务物全都要走得过去 */
+function ensureReachable(map){
+  const {tiles, entry, exit} = map;
+  // 出生点绝不能落在墙里
+  if(!tilePass(tiles[entry.y][entry.x])) tiles[entry.y][entry.x]=0;
+  if(!tilePass(tiles[exit.y][exit.x])) tiles[exit.y][exit.x]=5;
+  let openNeighbour=false;
+  for(const [dx,dy] of R4){
+    const nx=entry.x+dx, ny=entry.y+dy;
+    if(nx>=0&&ny>=0&&nx<GW&&ny<GH&&tilePass(tiles[ny][nx])) openNeighbour=true;
+  }
+  if(!openNeighbour){
+    for(const [dx,dy] of R4){
+      const nx=entry.x+dx, ny=entry.y+dy;
+      if(nx>=0&&ny>=0&&nx<GW&&ny<GH) tiles[ny][nx]=0;
+    }
+  }
+  const targets = [{x:exit.x,y:exit.y}]
+    .concat((map.props||[]).map(p=>({x:p.x,y:p.y})))
+    .concat((map.items||[]).map(i=>({x:i.x,y:i.y})))
+    .concat((map.mobs||[]).filter(m=>m.boss).map(m=>({x:m.x,y:m.y})));
+  for(const t of targets){
+    const seen = reachSet(tiles, entry.x, entry.y);
+    if(seen.has(t.y*GW+t.x)) continue;
+    let bx=null, by=null, bd=1e9;
+    seen.forEach(k=>{
+      const x=k%GW, y=Math.floor(k/GW);
+      const d=Math.abs(x-t.x)+Math.abs(y-t.y);
+      if(d<bd){ bd=d; bx=x; by=y; }
+    });
+    if(bx===null) continue;
+    let x=bx, y=by;
+    while(x!==t.x){ x+=Math.sign(t.x-x); if(!tilePass(tiles[y][x])) tiles[y][x]=0; }
+    while(y!==t.y){ y+=Math.sign(t.y-y); if(!tilePass(tiles[y][x])) tiles[y][x]=0; }
+    if(!tilePass(tiles[t.y][t.x])) tiles[t.y][t.x]=0;
+  }
+  // 出口周围不许有人堵门
+  (map.mobs||[]).forEach(m=>{
+    if(dist(m.x,m.y,exit.x,exit.y) <= 1){
+      for(let k=0;k<200;k++){
+        const nx=1+rand(GW-2), ny=1+rand(GH-2);
+        if(tiles[ny][nx]===0 && !map.mobs.some(o=>o.x===nx&&o.y===ny) && dist(nx,ny,entry.x,entry.y)>6){
+          m.x=nx; m.y=ny; break;
+        }
+      }
+    }
+  });
+  return map;
+}
+
+/* ===== 主题地图 ===== */
+function blankMap(v){ return Array.from({length:GH},()=>Array(GW).fill(v===undefined?1:v)); }
+function carve(t,x,y,w,h,v){
+  for(let yy=y; yy<y+h; yy++) for(let xx=x; xx<x+w; xx++)
+    if(xx>0&&yy>0&&xx<GW-1&&yy<GH-1) t[yy][xx] = (v===undefined?0:v);
+}
+function boxw(t,x,y,w,h){ carve(t,x,y,w,h,1); carve(t,x+1,y+1,w-2,h-2,0); }
+
+function spawnEnemiesFor(cfg,o){
+  const pool = cfg.mobs || [['levy',6]];
+  const total = pool.reduce((s,m)=>s+m[1],0);
+  const rs = o.rooms.filter(r=>r!==o.rooms[0]);
+  if(!rs.length) return;
+  let placed=0, ri=0, guard=0;
+  while(placed<total && guard<600){
+    guard++;
+    const r = rs[ri % rs.length]; ri++;
+    let acc=0, type='levy';
+    for(const [tp,cn] of pool){ acc+=cn; if(placed<acc){ type=tp; break; } }
+    let x,y,ok=false;
+    for(let t=0;t<50;t++){
+      x=r.x+rand(r.w); y=r.y+rand(r.h);
+      if(o.tiles[y][x]===0 && dist(x,y,o.entry.x,o.entry.y)>5 && !o.mobs.some(m=>m.x===x&&m.y===y)){ ok=true; break; }
+    }
+    if(ok){
+      const mob = mkMob(type,x,y);
+      mob.patrol = [{x:r.cx,y:r.cy}, {x:r.x+1,y:r.y+1}, {x:r.x+r.w-2,y:r.y+r.h-2}];
+      mob.pi = rand(3);
+      o.mobs.push(mob); placed++;
+    }
+    else if(ri>rs.length*8) break;
+  }
+}
+
+function spawnRelFor(cfg,o){
+  function put(pool, list, rel){
+    if(!pool||!pool.length||!list.length) return;
+    const n = pool.reduce((a,m)=>a+m[1],0);
+    let placed=0, g=0;
+    while(placed<n && g<200){
+      g++;
+      const r=list[placed%list.length];
+      let type='levy', acc=0;
+      for(const [tp,cn] of pool){ acc+=cn; if(placed<acc){ type=tp; break; } }
+      let x,y,ok=false;
+      for(let t=0;t<50;t++){
+        x=r.x+rand(r.w); y=r.y+rand(r.h);
+        if(o.tiles[y][x]===0 && !(x===o.entry.x&&y===o.entry.y) && !o.mobs.some(m=>m.x===x&&m.y===y)){ ok=true; break; }
+      }
+      if(ok){
+        const m0 = mkMob(type,x,y,{rel});
+        if(rel==='ally' && cfg.allyNames && placed < cfg.allyNames.length){ m0.name = cfg.allyNames[placed]; m0.named = true; }
+        o.mobs.push(m0); placed++;
+      }
+      else g+=2;
+    }
+  }
+  put(cfg.allies, [o.rooms[0], o.rooms[1]||o.rooms[0]], 'ally');
+  put(cfg.neutrals, [o.mid], 'neutral');
+}
+
+function placeObjective(cfg,o){
+  if(!cfg.obj) return;
+  if(cfg.obj.type==='burn'){
+    [o.far, o.mid].forEach(r=>{
+      for(let k=0;k<2;k++){
+        let x,y,ok=false;
+        for(let t=0;t<40;t++){
+          x=r.x+1+rand(Math.max(1,r.w-2)); y=r.y+1+rand(Math.max(1,r.h-2));
+          if(o.tiles[y][x]===0){ok=true;break;}
+        }
+        if(ok){ o.props.push({x,y,hp:100,max:100,kind:'grain',burning:0}); }
+      }
+    });
+  }
+  if(cfg.obj.type==='protect'){
+    for(let k=0;k<3;k++){
+      let x,y,ok=false;
+      for(let t=0;t<40;t++){
+        x=o.mid.cx+rand(3)-1; y=o.mid.cy+rand(3)-1;
+        if(o.tiles[y] && o.tiles[y][x]===0){ok=true;break;}
+      }
+      if(ok) o.props.push({x,y,hp:100,max:100,kind:'grain',burning:0});
+    }
+  }
+  if(cfg.obj.type==='steal'){
+    let x,y,ok=false;
+    for(let t=0;t<40;t++){
+      x=o.far.x+1+rand(Math.max(1,o.far.w-2)); y=o.far.y+1+rand(Math.max(1,o.far.h-2));
+      if(o.tiles[y][x]===0){ok=true;break;}
+    }
+    if(ok) o.items.push({x,y,taken:false,name:cfg.obj.item||'物'});
+  }
+  if(cfg.obj.type==='escort'){
+    o.items.push({x:o.mid.cx,y:o.mid.cy,taken:false,name:'人',isEscort:true,hp:30,maxhp:30,dead:false});
+  }
+}
+
+function spawnBossFor(cfg,o){
+  if(!cfg.boss) return;
+  const r = o.far || o.rooms[0];
+  let x=r.cx, y=r.cy;
+  for(let t=0;t<50;t++){
+    const nx=r.x+rand(r.w), ny=r.y+rand(r.h);
+    if(o.tiles[ny] && o.tiles[ny][nx]===0 && !o.mobs.some(m=>m.x===nx&&m.y===ny)){ x=nx; y=ny; break; }
+  }
+  o.mobs.push(mkMob(cfg.boss, x, y));
+}
+function finishTheme(cfg,o){
+  placeObjective(cfg,o);
+  spawnBossFor(cfg,o);
+  spawnEnemiesFor(cfg,o);
+  spawnRelFor(cfg,o);
+  return ensureReachable(o);
+}
+
+/* ---- 军营：营帐、粮堆、瞭望塔、营门、火盆 ---- */
+function themeCamp(cfg){
+  const tiles = blankMap(1);
+  carve(tiles, 2, 2, 50, 35);                 // 营区地面
+  const rooms=[];
+  for(let ry=0; ry<3; ry++) for(let rx=0; rx<3; rx++){
+    rooms.push({x:3+rx*16, y:3+ry*11, w:14, h:9, cx:3+rx*16+7, cy:3+ry*11+4});
+  }
+  // 营道
+  for(let y=12;y<=13;y++) carve(tiles,2,y,50,1);
+  for(let y=23;y<=24;y++) carve(tiles,2,y,50,1);
+  for(let x=18;x<=19;x++) carve(tiles,x,2,1,35);
+  for(let x=35;x<=36;x++) carve(tiles,x,2,1,35);
+  // 营帐（帐幕墙块，帐口朝营道）
+  rooms.forEach(r=>{
+    for(let k=0;k<4;k++){
+      const x=r.x+1+rand(Math.max(1,r.w-8)), y=r.y+1+rand(Math.max(1,r.h-6));
+      boxw(tiles,x,y,5,4);
+    }
+  });
+  // 营门两侧的帐
+  boxw(tiles,21,29,5,4); boxw(tiles,30,29,5,4);
+  // 瞭望塔：高地
+  [[4,4],[48,4],[4,33],[48,33]].forEach(([x,y])=>carve(tiles,x,y,2,2,T_HIGH));
+  // 火盆
+  for(let i=0;i<8;i++){
+    const x=3+rand(47), y=3+rand(33);
+    if(tiles[y][x]===0 && !rooms.some(r=>false)) tiles[y][x]=T_BRAZI;
+  }
+  // 营门
+  tiles[35][27]=T_DOOR; tiles[35][28]=T_DOOR;
+  const entry={x:27,y:34}, exit={x:27,y:3};
+  tiles[exit.y][exit.x]=5;
+  return finishTheme(cfg,{tiles,rooms,props:[],items:[],mobs:[],entry,exit,
+    far:rooms[8]||rooms[0], mid:rooms[4]||rooms[0]});
+}
+
+/* ---- 城镇：街道、民居、院墙、城门、巷战 ---- */
+function themeTown(cfg){
+  if(cfg.mood==='palace') return themePalace(cfg);
+  const tiles = blankMap(1);
+  carve(tiles, 2, 2, 50, 35);
+  // 街道
+  for(const y of [10,11,22,23]) carve(tiles,2,y,50,1);
+  for(const x of [12,13,31,32]) carve(tiles,x,2,1,35);
+  // 民居
+  const rooms=[];
+  const blocks=[[3,3,9,6],[15,3,15,6],[34,3,15,6],[3,13,9,8],[15,13,15,8],[34,13,15,8],
+                [3,25,9,10],[15,25,15,10],[34,25,15,10]];
+  blocks.forEach(([x,y,w,h],i)=>{
+    boxw(tiles,x,y,w,h);
+    tiles[y+h-1][x+Math.floor(w/2)]=T_DOOR;
+    rooms.push({x,y,w,h,cx:x+Math.floor(w/2),cy:y+Math.floor(h/2)});
+  });
+  // 巷口木桶
+  for(let i=0;i<6;i++){
+    const x=3+rand(47), y=3+rand(33);
+    if(tiles[y][x]===0) tiles[y][x]=T_BARREL;
+  }
+  tiles[35][27]=T_DOOR;
+  // 街上有百姓。他们不帮你，也不会拦你——除非你先动手
+  cfg.neutrals = (cfg.neutrals||[]).concat([['levy',2]]);
+  const entry={x:27,y:34}, exit={x:27,y:3};
+  tiles[exit.y][exit.x]=5;
+  return finishTheme(cfg,{tiles,rooms,props:[],items:[],mobs:[],entry,exit,
+    far:rooms[2]||rooms[0], mid:rooms[4]||rooms[0]});
+}
+
+/* ---- 皇宫：宫殿、长廊、内院、禁地 ---- */
+function themePalace(cfg){
+  const tiles = blankMap(1);
+  carve(tiles, 2, 2, 50, 35);
+  for(const y of [18,19,20]) carve(tiles,2,y,50,1);      // 横长廊
+  for(const x of [26,27,28]) carve(tiles,x,2,1,35);      // 纵长廊
+  const rooms=[];
+  // 三座殿
+  [[5,4,17,11],[32,4,17,11],[5,24,17,11]].forEach(([x,y,w,h])=>{
+    boxw(tiles,x,y,w,h);
+    tiles[y+h-1][x+Math.floor(w/2)]=T_DOOR;
+    rooms.push({x,y,w,h,cx:x+Math.floor(w/2),cy:y+Math.floor(h/2)});
+  });
+  // 禁地（小内院）
+  boxw(tiles,33,24,15,10);
+  tiles[33][40]=T_DOOR;
+  rooms.push({x:33,y:24,w:15,h:10,cx:40,cy:29});
+  // 宫门
+  tiles[35][26]=T_DOOR; tiles[35][27]=T_DOOR; tiles[35][28]=T_DOOR;
+  const entry={x:27,y:34}, exit={x:27,y:3};
+  tiles[exit.y][exit.x]=5;
+  return finishTheme(cfg,{tiles,rooms,props:[],items:[],mobs:[],entry,exit,
+    far:rooms[1]||rooms[0], mid:rooms[3]||rooms[0]});
+}
+
+/* ---- 山道：窄道、岩石、高地、隘口、伏击 ---- */
+function themeMountain(cfg){
+  const tiles = blankMap(1);
+  const rooms=[];
+  let x=27;
+  for(let y=34; y>=3; y--){
+    if(y%7===0) x += (Math.random()<0.5?-4:4);
+    x = clamp(x, 6, 46);
+    const w = (y>18 && y<22) ? 1 : 2+rand(2);      // 隘口收窄
+    carve(tiles, x, y, w, 1);
+    if(y%5===0) rooms.push({x:x-2,y:y-1,w:w+4,h:3,cx:x,cy:y});
+  }
+  // 猎户下的套索、绊马坑
+  for(let i=0;i<6;i++){
+    const rx=6+rand(42), ry=6+rand(28);
+    if(tiles[ry][rx]===0) tiles[ry][rx]=T_TRAP;
+  }
+  // 岩石与高地
+  for(let i=0;i<60;i++){
+    const rx=3+rand(48), ry=3+rand(34);
+    if(tiles[ry][rx]===1) continue;
+    tiles[ry][rx] = Math.random()<0.7 ? T_ROCK : T_HIGH;
+  }
+  const entry={x:27,y:34}, exit={x:27,y:3};
+  carve(tiles, exit.x-1, 3, 3, 1);
+  tiles[exit.y][exit.x]=5;
+  if(!rooms.length) rooms.push({x:20,y:20,w:10,h:10,cx:25,cy:25});
+  return finishTheme(cfg,{tiles,rooms,props:[],items:[],mobs:[],entry,exit,
+    far:rooms[rooms.length-1], mid:rooms[Math.floor(rooms.length/2)]});
+}
+
+/* ---- 渡口：河流、浅滩、木桥、水战 ---- */
+function themeFord(cfg){
+  const tiles = blankMap(0);
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    if(x<2||y<2||x>=GW-2||y>=GH-2) tiles[y][x]=1;
+  }
+  const river=21+rand(4);
+  for(let y=2;y<GH-2;y++) for(let x=river;x<river+6;x++) tiles[y][x]=2;
+  // 浅滩两段
+  for(let y=6;y<10;y++) for(let x=river;x<river+6;x++) tiles[y][x]=T_SHALLOW;
+  for(let y=28;y<32;y++) for(let x=river;x<river+6;x++) tiles[y][x]=T_SHALLOW;
+  // 木桥
+  const bridges=[14, 22];
+  bridges.forEach(by=>{ for(let y=by;y<by+2;y++) for(let x=river;x<river+6;x++) tiles[y][x]=0; });
+  // 岸上掩体
+  for(let i=0;i<40;i++){
+    const x=(Math.random()<0.5)? 4+rand(15) : river+8+rand(15);
+    const y=3+rand(34);
+    if(tiles[y][x]===0 && Math.random()<0.5) tiles[y][x]=3;
+  }
+  // 岸边两条船，划过去比踩水快
+  for(const by of [17,26]){
+    for(let k=0;k<2;k++){
+      const bx=river+1+k*2;
+      if(tiles[by][bx]===2) tiles[by][bx]=T_BOAT;
+    }
+  }
+  const rooms=[
+    {x:4,y:4,w:14,h:32,cx:11,cy:20},
+    {x:river+9,y:4,w:14,h:32,cx:river+16,cy:20}
+  ];
+  const entry={x:11,y:33}, exit={x:river+16,y:4};
+  tiles[exit.y][exit.x]=5;
+  return finishTheme(cfg,{tiles,rooms,props:[],items:[],mobs:[],entry,exit,
+    far:rooms[1], mid:rooms[0]});
+}
+
+/* ---- 粮仓：仓房、粮车、隔离带、可燃密集 ---- */
+function themeGranary(cfg){
+  const tiles = blankMap(1);
+  carve(tiles, 2, 2, 50, 35);
+  const rooms=[];
+  [[4,4,15,11],[24,4,15,11],[4,22,15,11],[24,22,15,11]].forEach(([x,y,w,h])=>{
+    boxw(tiles,x,y,w,h);
+    tiles[y+h-1][x+w/2]=T_DOOR;
+    rooms.push({x,y,w,h,cx:x+Math.floor(w/2),cy:y+Math.floor(h/2)});
+  });
+  // 隔离带：仓间空地（保持空）
+  const props=[];
+  for(let i=0;i<16;i++){
+    const r=rooms[rand(rooms.length)];
+    const x=r.x+1+rand(Math.max(1,r.w-2)), y=r.y+1+rand(Math.max(1,r.h-2));
+    if(tiles[y][x]===0 && !props.some(q=>q.x===x&&q.y===y)) props.push({x,y,hp:100,max:100,kind:'grain',burning:0});
+  }
+  // 木桶（易燃）
+  for(let i=0;i<8;i++){
+    const x=3+rand(47), y=3+rand(33);
+    if(tiles[y][x]===0) tiles[y][x]=T_BARREL;
+  }
+  const entry={x:27,y:34}, exit={x:27,y:3};
+  tiles[exit.y][exit.x]=5;
+  return finishTheme(cfg,{tiles,rooms,props,items:[],mobs:[],entry,exit,
+    far:rooms[1], mid:rooms[2]});
+}
+
+const THEMES = {camp:themeCamp, town:themeTown, palace:themePalace,
+                mountain:themeMountain, ford:themeFord, granary:themeGranary};
+THEMES.road = themeMountain;
+THEMES.pass = themeMountain;
+THEMES.granary = themeGranary;
+
+function genMap(cfg){
+  if(THEMES[cfg.theme]) return THEMES[cfg.theme](cfg);
+  const tiles = Array.from({length:GH},()=>Array(GW).fill(1));
+  const rooms = [];
+  const want = (cfg.rooms || 8) + 6;
+  let tries=0;
+  while(rooms.length<want && tries<400){
+    tries++;
+    const w=4+rand(6), h=3+rand(5);
+    const x=2+rand(GW-w-4), y=2+rand(GH-h-4);
+    const r={x,y,w,h,cx:x+Math.floor(w/2), cy:y+Math.floor(h/2)};
+    if(rooms.some(o=>rectOverlap(r,o,1))) continue;
+    rooms.push(r);
+  }
+  rooms.forEach(r=>carveWide(tiles,r.x,r.y,r.w,r.h));
+  const sorted=[...rooms].sort((a,b)=>a.cx-b.cx);
+  for(let i=1;i<sorted.length;i++){
+    const a=sorted[i-1], b=sorted[i];
+    corridorH(tiles,a.cx,b.cx,a.cy);
+    corridorV(tiles,a.cy,b.cy,b.cx);
+  }
+
+  const props=[], items=[];
+  const mobs=[];
+
+  // 主题装饰
+  function deco(r){
+    for(let i=0;i<3;i++){
+      const x=r.x+rand(r.w), y=r.y+rand(r.h);
+      if(tiles[y][x]===0 && Math.random()<0.5) tiles[y][x]=3;
+    }
+    if(Math.random()<0.4){
+      const x=r.x+rand(r.w), y=r.y+rand(r.h);
+      if(tiles[y][x]===0) tiles[y][x]=6;
+    }
+  }
+  const far = sorted[sorted.length-1];
+  const near = sorted[0];
+
+  rooms.forEach((r,i)=>{
+    if(cfg.theme==='ford' && r.cy>8 && r.cy<GH-8 && r.w>4){
+      for(let yy=r.y+1; yy<r.y+r.h-1; yy++) for(let xx=r.cx-1; xx<=r.cx+1; xx++) tiles[yy][xx]=2;
+    } else deco(r);
+    if(cfg.theme==='town' && i%2===0){
+      // 屋里加一道墙，做出街巷
+      const wx=r.cx, wy=r.y+1;
+      for(let yy=r.y; yy<r.y+r.h; yy++) if(tiles[yy][wx]===0 && Math.random()<0.6) tiles[yy][wx]=1;
+    }
+  });
+
+  // 入口 / 出口
+  const entry={x:near.cx, y:near.cy};
+  const exit={x:far.cx, y:far.cy};
+  tiles[exit.y][exit.x]=5;
+
+  // 可燃物
+  const burnRooms = cfg.obj && cfg.obj.type==='burn' ? [far, sorted[sorted.length-2]||far] : [];
+  burnRooms.forEach(r=>{
+    for(let k=0;k<2;k++){
+      let x,y,ok=false;
+      for(let t=0;t<30;t++){
+        x=r.x+1+rand(Math.max(1,r.w-2)); y=r.y+1+rand(Math.max(1,r.h-2));
+        if(tiles[y][x]===0){ok=true;break;}
+      }
+      if(ok){ tiles[y][x]=4; props.push({x,y,hp:100,max:100,kind:'grain',burning:0}); }
+    }
+  });
+  // 保护类：粮堆在中间房间
+  if(cfg.obj && cfg.obj.type==='protect'){
+    const mid = sorted[Math.floor(sorted.length/2)] || far;
+    for(let k=0;k<3;k++){
+      let x,y,ok=false;
+      for(let t=0;t<40;t++){
+        x=mid.x+1+rand(Math.max(1,mid.w-2)); y=mid.y+1+rand(Math.max(1,mid.h-2));
+        if(tiles[y][x]===0){ok=true;break;}
+      }
+      if(ok){ tiles[y][x]=4; props.push({x,y,hp:100,max:100,kind:'grain',burning:0}); }
+    }
+  }
+  // 取物：放在最远房间
+  if(cfg.obj && cfg.obj.type==='steal'){
+    let x,y,ok=false;
+    for(let t=0;t<40;t++){
+      x=far.x+1+rand(Math.max(1,far.w-2)); y=far.y+1+rand(Math.max(1,far.h-2));
+      if(tiles[y][x]===0){ok=true;break;}
+    }
+    if(ok) items.push({x,y,taken:false,name:cfg.obj.item||'物'});
+  }
+  // 护送：目标在中间，终点是出口
+  if(cfg.obj && cfg.obj.type==='escort'){
+    const mid=sorted[Math.floor(sorted.length/2)]||far;
+    items.push({x:mid.cx,y:mid.cy,taken:false,name:'人',isEscort:true,hp:30,maxhp:30,dead:false});
+  }
+
+  // 敌人：严格按配置总数，均匀铺到非入口房间
+  const moodPool = cfg.mobs || [['levy',6]];
+  const total = moodPool.reduce((s,m)=>s+m[1],0);
+  const spawnRooms = rooms.filter(r=>r!==near);
+  let placed = 0, ri = 0, guardN = 0;
+  while(placed < total && spawnRooms.length && guardN < 600){
+    guardN++;
+    const r = spawnRooms[ri % spawnRooms.length]; ri++;
+    let acc = 0, type = 'levy';
+    for(const [tp,cn] of moodPool){ acc += cn; if(placed < acc){ type = tp; break; } }
+    let x,y,ok=false;
+    for(let t=0;t<50;t++){
+      x=r.x+rand(r.w); y=r.y+rand(r.h);
+      if(tiles[y][x]===0 && dist(x,y,entry.x,entry.y)>6 && !mobs.some(m=>m.x===x&&m.y===y)){ok=true;break;}
+    }
+    if(ok){ mobs.push(mkMob(type,x,y)); placed++; }
+    else if(ri > spawnRooms.length*6) break;
+  }
+
+  // 友军 / 中立：敌我关系得真能看见，不然绿黄红只是一句口号
+  function spawnRel(pool, roomList, rel){
+    if(!pool || !pool.length || !roomList.length) return;
+    const n = pool.reduce((a,m)=>a+m[1],0);
+    let placed = 0, g = 0;
+    while(placed < n && g < 240){
+      g++;
+      const r = roomList[placed % roomList.length];
+      let type='levy', a=0;
+      for(const [tp,cn] of pool){ a += cn; if(placed < a){ type=tp; break; } }
+      let x,y,ok=false;
+      for(let t=0;t<50;t++){
+        x=r.x+rand(r.w); y=r.y+rand(r.h);
+        if(tiles[y][x]===0 && !(x===entry.x&&y===entry.y) && !mobs.some(m=>m.x===x&&m.y===y)){ ok=true; break; }
+      }
+      if(ok){ mobs.push(mkMob(type,x,y,{rel})); placed++; }
+      else g += 2;
+    }
+  }
+  if(cfg.allies)   spawnRel(cfg.allies,   [near, sorted[1]||near], 'ally');
+  if(cfg.neutrals) spawnRel(cfg.neutrals, [sorted[Math.floor(sorted.length/2)]||near], 'neutral');
+
+  return ensureReachable({tiles, rooms, props, items, mobs, entry, exit, cfg});
+}
+
+function mkMob(type,x,y,extra){
+  const base = MOBS[type] || MOBS.levy;
+  return Object.assign({
+    type, x, y, hp:base.hp, max:base.hp,
+    atk:base.atk, def:base.def, ai:base.ai, range:base.range,
+    color:base.color, name:base.name, cd:0, bleed:0, bleedT:0,
+    lv:base.lv, kind:base.kind, qi:base.qi, maxQi:base.qi,
+    weapon:base.weapon, armor:base.armor, spd:base.spd,
+    acc:base.acc, eva:base.eva, res:base.res,
+    rel:'hostile', seen:false, alert:false, dead:false, boss:base.boss
+  }, extra||{});
+}
+
+/* ===== 器物 ===== */
+const ITEMS = {
+  dao:    {name:'环首刀', type:'weapon', atk:4, d:'汉军制式，直身窄刃。'},
+  changdao:{name:'长刀', type:'weapon', atk:7, d:'双手长刃，一刀断马腿。'},
+  jian:   {name:'百炼剑', type:'weapon', atk:5, eva:2, d:'反复锻打，轻而利。'},
+  spear:  {name:'马槊',  type:'weapon', atk:6, range:1, d:'骑战长兵，可及丈外。'},
+  armor1: {name:'皮甲',  type:'armor', def:2, d:'硝过的牛皮，挡得住流矢。'},
+  armor2: {name:'铁札甲', type:'armor', def:4, eva:-1, d:'甲片编缀，重，但硬。'},
+  armor3: {name:'明光铠', type:'armor', def:6, hp:15, d:'胸前两片护镜，日下反光。'},
+  med:    {name:'金疮药', type:'use', heal:32, d:'敷上，血就止住了。'},
+  pill:   {name:'醒神丹', type:'use', qi:18, d:'一味猛药，暗劲立回。'},
+  food:   {name:'干粮',  type:'use', sta:35, d:'硬得硌牙，但顶饿。'},
+  oil:    {name:'火油',  type:'use', d:'泼出去，点火就烧——身边两格内的粮。'},
+  dagg:   {name:'短匕',  type:'weapon', atk:2, eva:2, d:'刃长七寸，藏得住。'},
+  bow0:   {name:'猎弓',  type:'weapon', atk:3, d:'桑木角弓，三十步内准。'},
+  spear0: {name:'木杆长矛', type:'weapon', atk:3, range:1, d:'削尖的硬木，够长。'},
+  cloth:  {name:'布衣',  type:'armor', def:1, d:'粗麻缝的短褐，聊胜于无。'},
+  huadao: {name:'华雄大刀', type:'weapon', atk:12, d:'刀身有缺口，每一道都是别人的骨头。'},
+  fangtian:{name:'方天画戟', type:'weapon', atk:16, range:1, eva:2, d:'一丈二的长戟，画彩为饰，重得压手。'},
+  dongarmor:{name:'董卓金甲', type:'armor', def:9, hp:30, d:'甲片镀金，穿在身上像背着一口锅。'}
+};
+/* 一件东西到底值多少 —— 面板里要把数写出来 */
+const RARITY = {
+  common:{name:'普通', c:'#9a9186', m:1.0,  af:0},
+  fine:  {name:'精良', c:'#7fa86a', m:1.12, af:1},
+  rare:  {name:'稀有', c:'#6a92c8', m:1.25, af:2},
+  epic:  {name:'史诗', c:'#a274c8', m:1.4,  af:3},
+  legend:{name:'传奇', c:'#d8a048', m:1.6,  af:4}
+};
+
+const AFFIX = {
+  sharp:     {n:'锋利', d:'攻击 +3', atk:3},
+  blood:     {n:'嗜血', d:'击杀回气血 6', killHeal:6},
+  pierce:    {n:'破甲', d:'无视三成防御', ignoreDef:0.3},
+  swift:     {n:'迅捷', d:'命中后三成概率减一回合冷却', cdCut:1},
+  heavy:     {n:'沉重', d:'伤害 +25%，每步多耗 1 体力', dmgMul:1.25, moveCost:1},
+  armorPierce:{n:'贯甲', d:'无视一半防御', ignoreDef:0.5},
+  guard:     {n:'守势', d:'格挡后下一击 +40%', guardBoost:0.4},
+  cloud:     {n:'穿云', d:'攻击距离 +1', range:1},
+  wind:      {n:'追风', d:'连续出手每击 +8% 伤害', comboDmg:0.08},
+  flame:     {n:'烈焰', d:'命中后目标燃烧 6，两回合', burn:6}
+};
+const AFFIX_WEAPON = ['sharp','pierce','swift','heavy','armorPierce','cloud','wind','flame','blood'];
+const AFFIX_ARMOR  = ['blood','guard','sharp','pierce'];
+
+function iid(x){ return (x && typeof x==='object') ? x.id : x; }
+function asGear(x){
+  if(!x) return null;
+  if(typeof x==='string') return {id:x, r:'common', af:[]};
+  return x;
+}
+
+/* 一件器物的真实合值：底子 × 稀有度 + 词缀 */
+function instStats(x){
+  const inst = asGear(x);
+  if(!inst) return null;
+  const base = ITEMS[inst.id] || {};
+  const rr = RARITY[inst.r] || RARITY.common;
+  const o = {atk:base.atk||0, def:base.def||0, eva:base.eva||0, hp:base.hp||0, range:base.range||0,
+             ignoreDef:0, cdCut:0, killHeal:0, dmgMul:1, moveCost:0, burn:0, comboDmg:0, guardBoost:0};
+  if(o.atk) o.atk = Math.round(o.atk * rr.m);
+  if(o.def) o.def = Math.round(o.def * rr.m);
+  (inst.af||[]).forEach(k=>{
+    const a = AFFIX[k]; if(!a) return;
+    o.atk += a.atk||0; o.def += a.def||0; o.eva += a.eva||0; o.hp += a.hp||0; o.range += a.range||0;
+    o.ignoreDef = Math.max(o.ignoreDef, a.ignoreDef||0);
+    o.cdCut += a.cdCut||0; o.killHeal += a.killHeal||0;
+    o.dmgMul *= (a.dmgMul||1); o.moveCost += a.moveCost||0; o.burn += a.burn||0;
+    o.comboDmg += a.comboDmg||0; o.guardBoost += a.guardBoost||0;
+  });
+  return o;
+}
+
+function mkGear(id, r, af){ return {id, r:r||'common', af:af||[]}; }
+
+function rollAffixes(pool, n){
+  const out = [];
+  for(let i=0;i<n;i++){
+    const cand = pool.filter(x=>!out.includes(x));
+    if(!cand.length) break;
+    out.push(pick(cand));
+  }
+  return out;
+}
+
+/* 敌人身上翻出来的东西：等级越高越可能出好东西 */
+function gearFor(id, lv){
+  const base = ITEMS[id];
+  const roll = Math.random();
+  let r = 'common';
+  if(lv>=4 && roll>0.955) r = 'legend';
+  else if(lv>=3 && roll>0.87) r = 'epic';
+  else if(roll>0.70) r = 'rare';
+  else if(roll>0.42) r = 'fine';
+  const pool = (base && base.type==='armor') ? AFFIX_ARMOR : AFFIX_WEAPON;
+  return mkGear(id, r, rollAffixes(pool, RARITY[r].af));
+}
+
+function gearLabel(inst){
+  if(!inst) return '徒手';
+  const nm = (ITEMS[inst.id]||{}).name || '?';
+  const rr = RARITY[inst.r] || RARITY.common;
+  return `<span style="color:${rr.c}">${nm}·${rr.name}</span>`;
+}
+
+function itemStat(it){
+  if(!it) return '';
+  const isInst = (typeof it==='object' && it.id && ITEMS[it.id]);
+  const o = isInst ? instStats(it) : it;
+  const out = [];
+  if(o.atk)   out.push('攻击 +'+o.atk);
+  if(o.def)   out.push('防御 +'+o.def);
+  if(o.eva)   out.push('闪避 '+(o.eva>0?'+':'')+o.eva);
+  if(o.hp)    out.push('气血上限 +'+o.hp);
+  if(o.heal)  out.push('立刻回气血 +'+o.heal);
+  if(o.qi)    out.push((run&&run.resName?run.resName:'斗气')+' +'+o.qi);
+  if(o.sta)   out.push('体力 +'+o.sta);
+  if(o.range) out.push('攻击距离 +'+o.range);
+  if(isInst){
+    if(o.ignoreDef) out.push('无视防御 '+Math.round(o.ignoreDef*100)+'%');
+    if(o.dmgMul>1)  out.push('伤害 +'+Math.round((o.dmgMul-1)*100)+'%');
+    if(o.killHeal)  out.push('击杀回血 +'+o.killHeal);
+    if(o.cdCut)     out.push('命中减冷却');
+    if(o.burn)      out.push('附加燃烧 '+o.burn);
+    if(o.comboDmg)  out.push('连击加伤');
+    if(o.guardBoost) out.push('格挡后加伤');
+    if(o.moveCost)  out.push('每步多耗 '+o.moveCost+' 体力');
+  }
+  return out.join('，');
+}
+
+function itemById(id){ return ITEMS[id] || null; }
+function it_desc(it){ return it ? it.d : ''; }
+
+/* ===== 视野 ===== */
+function lineOfSight(x0,y0,x1,y1,tiles){
+  let dx=Math.abs(x1-x0), dy=Math.abs(y1-y0);
+  let sx=x0<x1?1:-1, sy=y0<y1?1:-1;
+  let err=dx-dy, x=x0, y=y0;
+  while(true){
+    if(x===x1 && y===y1) return true;
+    if(!(x===x0&&y===y0)){
+      const t=tiles[y][x];
+      if(t===1||t===6||t===T_ROCK||t===T_DOOR||t===T_BARREL) return false;
+    }
+    const e2=2*err;
+    if(e2>-dy){ err-=dy; x+=sx; }
+    if(e2<dx){ err+=dx; y+=sy; }
+    if(Math.abs(x-x0)>60) return false;
+  }
+}
+
+/* 烟挡视线：线段只要穿过烟区，就看不清 */
+function smokeBetween(x0,y0,x1,y1){
+  if(!G || !G.smoke) return false;
+  const sm = G.smoke;
+  const steps = Math.max(Math.abs(x1-x0), Math.abs(y1-y0)) * 2;
+  for(let i=1;i<=steps;i++){
+    const t = i/steps;
+    const x = Math.round(x0 + (x1-x0)*t);
+    const y = Math.round(y0 + (y1-y0)*t);
+    if(dist(x,y,sm.x,sm.y) <= (sm.r||1)) return true;
+  }
+  return false;
+}
+
+/* 敌人能不能看见玩家：距离、视线、烟，三者都算 */
+function canEnemySee(m){
+  if(!G || !m || m.dead) return false;
+  if(dist(m.x,m.y,G.px,G.py) > run.sight+2) return false;
+  if(smokeBetween(m.x,m.y,G.px,G.py)) return false;
+  return lineOfSight(m.x,m.y,G.px,G.py,G.tiles);
+}
+
+function computeFOV(){
+  const {tiles} = G;
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++) G.visible[y][x]=false;
+  const r = run.sight;
+  for(let y=Math.max(0,G.py-r); y<=Math.min(GH-1,G.py+r); y++){
+    for(let x=Math.max(0,G.px-r); x<=Math.min(GW-1,G.px+r); x++){
+      if(dist(G.px,G.py,x,y)>r) continue;
+      if(lineOfSight(G.px,G.py,x,y,tiles)){
+        G.visible[y][x]=true; G.explored[y][x]=true;
+      }
+    }
+  }
+  if(G.mobs.some(m=>!m.dead && m.rel==='hostile' && canEnemySee(m))){
+    G.lastSeen = {x:G.px, y:G.py};
+  }
+  // 敌人可见性
+  G.mobs.forEach(m=>{
+    m.visible = G.visible[m.y] && G.visible[m.y][m.x] && m.x>=0;
+    if(m.visible && !m.seen){ m.seen=true; addLog(m.name+' 出现在视野里。', 'r'); }
+  });
+  // 火光照亮
+  G.props.forEach(p=>{
+    if(p.burning>0){
+      for(let y=p.y-3;y<=p.y+3;y++) for(let x=p.x-3;x<=p.x+3;x++)
+        if(x>=0&&x<GW&&y>=0&&y<GH&&dist(x,y,p.x,p.y)<=3){ G.visible[y][x]=true; G.explored[y][x]=true; }
+    }
+  });
+}
+
+/* ===== 单局角色 ===== */
+function startRun(clsId, starterId){
+  const cd = CLASSES[clsId];
+  const baseW = clsId==='dagger'?'dagg':(clsId==='bow'?'bow0':'spear0');
+  const startIt = starterId && ITEMS[starterId] ? ITEMS[starterId] : null;
+  const wId = (startIt && startIt.type==='weapon') ? starterId : baseW;
+  const aId = (startIt && startIt.type==='armor')  ? starterId : 'cloth';
+  const wR = (startIt && startIt.type==='weapon') ? 'legend' : 'common';
+  const aR = (startIt && startIt.type==='armor')  ? 'legend' : 'common';
+  run = {
+    cls: clsId, name: cd.name, glyph: cd.glyph,
+    lv:1, exp:0, hp:cd.hp, maxhp:cd.hp, basehp:cd.hp,
+    st:100, stmax:100,
+    res:0, resMax:cd.resMax, resKey:cd.res, resName:cd.resName,
+    atk:cd.atk, def:cd.def, eva:cd.eva, sight:cd.sight,
+    fame:0, money:0, bounty:0,
+    skills: cd.skills.slice(),
+    cd:{}, hidden:false, brace:0, spearGuard:0, gateGuard:0,
+    kills:0, movedThisTurn:false,
+    sp:2, items:["oil"], rank:{},
+    equip:{weapon: mkGear(wId, wR), armor: mkGear(aId, aR)}
+  };
+  W.year = 184;
+  W.evIdx = 0;
+  W.flags = {};
+  recalcGear();
+}
+
+/* ===== 建立战斗 ===== */
+function startTask(choice, evId, chIdx){
+  const cfg = tuneTask(cloneTask(choice.task));
+  if(evId!=null) W.flags[evId+'_'+chIdx] = true;
+  const map = genMap(cfg);
+  G = {
+    tiles:map.tiles, props:map.props, items:map.items, mobs:map.mobs,
+    entry:map.entry, exit:map.exit, cfg, evId:(evId!=null?evId:null),
+    px:map.entry.x, py:map.entry.y,
+    visible:Array.from({length:GH},()=>Array(GW).fill(false)),
+    explored:Array.from({length:GH},()=>Array(GW).fill(false)),
+    alarm: cfg.mood==='betray' ? 1 : 0,
+    turn:0, over:false, atExit:false,
+    obj: cfg.obj, objDone:0, reinforceTick:0,
+    log:[], fx:[], toast:null, shake:0, hitT:0
+  };
+  applyDiff(G);
+  metaAddMany('codex', G.mobs.filter(m=>m.rel==='hostile').map(m=>m.type));
+  if(evId!=null) metaAddMany('events',[evId]);
+  if(cfg.boss){
+    const bn={huaxiong:'华雄',lvbu:'吕布',dongzhuo:'董卓'}[cfg.boss]||'名将';
+    G.toast={txt:'名将现身 · '+bn, t0:nowT(), big:true};
+  }
+  // 上一场带下来的伤、乏不会自动清零，回营地才有得治
+  run.hp = clamp(run.hp, 1, run.maxhp);
+  run.st = clamp(run.st + Math.round(run.stmax*0.4), 0, run.stmax);
+  run.res = 0;
+  run.cd = {};
+  run.hidden = run.cls==='dagger' && false;
+  run.movedThisTurn=false;
+  if(!run.items) run.items=[];
+  if(!run.equip) run.equip={weapon:null,armor:null};
+  if(!run.rank) run.rank={};
+  UI.mode='move'; UI.pending=null; UI.cursor=null; UI.paused=false;
+  const h0 = document.getElementById('hint');
+  if(h0) h0.textContent = '';
+  clearLog();
+  addLog(choice.d || '刀已出鞘。', 'hi');
+  const thKey = cfg.mood==='palace' ? 'palace' : cfg.theme;
+  const thName = THEME_NAME[thKey] || THEME_NAME[cfg.theme] || '野地';
+  const thDesc = {camp:'营帐连着火盆，营门一开就是三横两纵的营道。',
+                  town:'街道被民居切成一条条巷子，城门后面全是墙。',
+                  palace:'长廊横贯，宫殿各自成院，宫门后是禁地。',
+                  mountain:'山路只剩一两格宽，两侧岩石挡视线，隘口最难走。',
+                  ford:'河横在中间，浅滩踩水慢，桥上才好过。',
+                  granary:'四座仓房围出空地，粮堆密，木桶一点就炸。'}[thKey] || '四野空旷。';
+  addLog('地形：'+thName+'。'+thDesc, 'y');
+  if(cfg.note) addLog(cfg.note, 'r');
+  if(cfg.waver) G.mobs.forEach(m=>{ if(m.rel==='hostile' && Math.random()<0.4) m.waver=2; });
+  if(cfg.intel){
+    const cnt={};
+    G.mobs.forEach(m=>{ if(m.rel==='hostile') cnt[m.kind]=(cnt[m.kind]||0)+1; });
+    addLog('【官军情报】'+Object.entries(cnt).map(([k,v])=>k+' '+v).join('、'),'y');
+  }
+  const o = cfg.obj;
+  let goal='';
+  if(o.type==='burn') goal = `烧掉 ${o.need} 处粮草`;
+  else if(o.type==='protect') goal = `至少守住 ${o.need} 堆粮，且清空此地`;
+  else if(o.type==='kill') goal = `取 ${o.eliteName||'目标'} 的命`;
+  else if(o.type==='steal') goal = `取走 ${o.item||'东西'}`;
+  else if(o.type==='escort') goal = `把人接出来`;
+  else if(o.type==='clear') goal = `清空此地的敌人`;
+  addLog('此行事：'+goal+'。','y');
+  computeFOV();
+  renderAll();
+  saveGame();
+}
+
+/* ===== 工具 ===== */
+function addLog(s,c){
+  if(!G) return;
+  G.log.push({s,c:c||''});
+  if(G.log.length>90) G.log.shift();
+  const el = document.getElementById('log');
+  if(el){
+    el.innerHTML = G.log.map(l=>`<p class="${l.c}">${l.s}</p>`).join('');
+    el.scrollTop = el.scrollHeight;
+  }
+}
+function clearLog(){ if(G){ G.log=[]; const el=document.getElementById('log'); if(el) el.innerHTML=''; } }
+function tileAt(x,y){ return (x<0||y<0||x>=GW||y>=GH) ? 1 : G.tiles[y][x]; }
+function mobAt(x,y){ return G.mobs.find(m=>!m.dead && m.x===x && m.y===y); }
+function propAt(x,y){ return G.props.find(p=>p.x===x && p.y===y); }
+function walkable(x,y){
+  const t = tileAt(x,y);
+  if(t===1||t===6||t===T_BARREL||t===T_ROCK) return false;
+  return true;
+}
+/* 地形对战斗的影响 */
+function tileMods(x,y){
+  if(!G || !G.tiles || !G.tiles[y]) return {move:0, hit:0, dmg:0, cover:0, high:0};
+  const t = tileAt(x,y);
+  const mod = {move:0, hit:0, dmg:0, cover:0, high:0};
+  if(t===2){ mod.move = 1; mod.hit = -0.10; }        // 深水：慢、飘
+  if(t===T_SHALLOW){ mod.move = 0.5; }
+  if(t===T_HIGH){ mod.high = 1; mod.hit = 0.12; mod.dmg = 1.1; }
+  if(t===3){ mod.cover = 0.10; }
+  let adjCover = 0;
+  for(const [dx,dy] of R4){
+    const n = tileAt(x+dx,y+dy);
+    if(n===1||n===T_ROCK||n===T_BARREL) adjCover += 0.12;
+  }
+  mod.cover = Math.min(0.45, mod.cover + adjCover);
+  return mod;
+}
+
+/* ===== 玩家移动 ===== */
+function movePlayer(dx,dy){
+  if(!G || G.over || UI.mode==='aim') return;
+  const nx = G.px+dx, ny = G.py+dy;
+  if(!walkable(nx,ny)) return;
+  if(mobAt(nx,ny)) return;
+  if(tileAt(nx,ny)===T_DOOR){
+    G.tiles[ny][nx]=0;
+    addLog('推开了门。','');
+  }
+  G.px=nx; G.py=ny;
+  if(tileAt(nx,ny)===T_SHALLOW) run.st = clamp(run.st-1,0,run.stmax);
+  if(tileAt(nx,ny)===2) run.st = clamp(run.st-2,0,run.stmax);
+  if(tileAt(nx,ny)===T_TRAP){
+    const dm = 6 + rand(8);
+    run.hp -= dm;
+    G.tiles[ny][nx] = 0;
+    addLog('脚下崩了一下——是猎户的套索。-' + dm, 'r');
+    G.alarm = clamp(G.alarm+1,0,4);
+  }
+  if(tileAt(nx,ny)===T_BOAT) addLog('踏上船板，水声盖住了脚步。','');
+  run.movedThisTurn = true;
+  const wsMove = gearStats('weapon');
+  if(wsMove && wsMove.moveCost) run.st = clamp(run.st - wsMove.moveCost, 0, run.stmax);
+
+  // 脚下有东西就捡起来
+  G.items.forEach(it=>{
+    if(it.taken || it.x!==nx || it.y!==ny || it.dead) return;
+    it.taken = true;
+    if(it.isEscort){
+      addLog('接上了要送的人。带上他，往出口走。','g');
+    } else {
+      addLog('取到了 '+it.name+'。','g');
+    }
+  });
+
+  if(tileAt(nx,ny)===5){
+    G.atExit = true;
+    addLog('到了出口。按 G 撤离，或继续留下。','g');
+  } else G.atExit = false;
+  if(tileAt(nx,ny)===2) run.st = clamp(run.st-3,0,run.stmax);
+  if(tileAt(nx,ny)===3) run.hidden = false;
+  if(run.hidden){
+    const tooClose = G.mobs.some(m=>!m.dead && m.rel==='hostile' && dist(m.x,m.y,nx,ny)<=1);
+    if(tooClose){ run.hidden=false; addLog('贴得太近，藏不住了。',''); }
+  }
+  endTurn();
+}
+
+/* ===== 攻击 ===== */
+const CRIT_BASE = { dagger:0.08, spear:0.15, bow:0.12 };
+
+function gearStats(slot){
+  if(!run || !run.equip) return null;
+  return instStats(run.equip[slot]);
+}
+function gearAtk(){ const s=gearStats('weapon'); return s?s.atk:0; }
+function gearDef(){ const s=gearStats('armor');  return s?s.def:0; }
+function gearEva(){
+  const w=gearStats('weapon'), a2=gearStats('armor');
+  return (w?w.eva:0) + (a2?a2.eva:0);
+}
+function gearHp(){ const s=gearStats('armor'); return s?s.hp:0; }
+function pAtk(){ return (run.atk||0) + gearAtk(); }
+function pDef(){ return (run.def||0) + gearDef() + (run.gateBonus||0); }
+function pEva(){ return (run.eva||0) + gearEva(); }
+
+function recalcGear(){
+  if(!run) return;
+  const base = (typeof run.basehp==='number') ? run.basehp : run.maxhp;
+  run.maxhp = base + gearHp();
+  if(run.hp > run.maxhp) run.hp = run.maxhp;
+}
+
+/* 这一击的暴击几率 —— 刺客 8%，潜行 35%，长兵 15%，弓手 12% */
+function critChance(){
+  let c = CRIT_BASE[run.cls] || 0.08;
+  if(run.cls==='dagger' && run.hidden) c = 0.35;
+  if(run.shadowCrit) c += 0.25;
+  if(run.aimCrit)    c += 0.15;
+  if(run.braceCrit)  c += 0.10;
+  return clamp(c, 0.02, 0.95);
+}
+
+/* 一次挥刀。mult 是倍率，basic=true 表示普通攻击（不吃任何资源惩罚）
+   命中与暴击是两次独立的判定：先看打不打得到，再看是不是要害。 */
+function playerAttack(m, mult, silent, basic){
+  if(!m) return false;
+  if(m.rel==='neutral'){
+    m.rel='hostile'; m.alert=true;
+    addLog(m.name+' 被你这一刀逼成了敌人。','r');
+  }
+  const ws = gearStats('weapon');
+  const hidden = (run.cls==='dagger' && run.hidden);
+  const pierce = Math.max((ws?ws.ignoreDef:0), run._pierce||0);
+  const defEff = Math.max(0, Math.round((m.def||0) * (1 - pierce)));
+  const am = tileMods(G.px,G.py), tm = tileMods(m.x,m.y);
+  const ranged = dist(G.px,G.py,m.x,m.y) > 1;
+  const coverPen = tm.cover * (ranged ? 1 : 0.35);
+  const hitChance = clamp(0.58 + (pAtk()-defEff)/80 + (hidden?0.22:0) - (m.eva||0)/100
+                          + am.hit - coverPen + (tm.high?-0.05:0), 0.15, 0.95);
+
+  const hit = Math.random() < hitChance;            // 先判命中
+  const crit = hit && Math.random() < critChance();  // 打中了才可能暴击
+
+  if(hit){
+    let dmg = Math.max(1, pAtk() + run.lv*1.6 - defEff + rand(5));
+    dmg = dmg * (mult||1) * (run._rb||1) * (run.brace?1.5:1) * (crit?1.8:1) * (ws?ws.dmgMul:1);
+    if(run._comboShot) dmg *= (1 + run._comboShot);
+    if(ws && ws.comboDmg){
+      run._shot = (run._shot||0) + 1;
+      dmg *= (1 + ws.comboDmg * run._shot);
+    }
+    dmg = Math.max(1, Math.round(dmg));
+    m.hp -= dmg;
+    m.hitT = nowT();
+    pushFx(m.x, m.y, '-'+dmg, crit?'crit':'dmg');
+    if(crit){ G.shake = nowT(); sfx('crit'); } else sfx('hit');
+    addLog(m.name + (crit?' 要害命中':' 中刀') + `  -${dmg}`, crit?'y':'');
+    if(run.cls==='spear') run.res = clamp(run.res+6,0,run.resMax);
+    if(hidden) run.res = clamp(run.res+8,0,run.resMax);
+    if(ws && ws.burn){ m.bleed = Math.max(m.bleed||0, ws.burn); m.bleedT = Math.max(m.bleedT||0, 2); }
+    if(ws && ws.cdCut && Math.random()<0.3){ Object.keys(run.cd).forEach(k=>{ if(run.cd[k]>0) run.cd[k]--; }); addLog('刀势未歇。','y'); }
+    if(m.rel!=='hostile'){
+      m.rel='hostile';
+      addLog(m.name+' 记下了这一刀——他把你当敌人了。','r');
+    }
+    if(m.hp<=0){
+      m.dead=true; run.kills++;
+      noteBossKill(m);
+      addLog(m.name+' 倒下。','g');
+      if(m.boss) toast('斩 · '+m.name, true);
+      sfx('win');
+      if(ws && ws.killHeal) run.hp = clamp(run.hp+ws.killHeal,0,run.maxhp);
+      G.alarm=clamp(G.alarm+2,0,4);
+      addExp((m.exp||1)*10 + (m.lv||1)*3);
+      dropLoot(m);
+    }
+  } else {
+    pushFx(m.x, m.y, '落空', 'miss');
+    addLog('落空了。','r');
+    if(run.cls==='spear' && !basic) run.res = clamp(run.res-10,0,run.resMax);
+  }
+  if(run.brace) run.brace = 0;      // 蓄势只兑现一次
+  run._comboShot = 0;
+  run.braceCrit = 0; run.aimCrit = 0; run.shadowCrit = 0;
+  run.hidden = false;
+  return true;
+}
+
+/*
+  普通攻击：不耗暗劲、不耗体力、不耗士气。
+  这是你的底子——所有手段都建立在它之上。
+*/
+function basicAttack(m){
+  if(!m) return false;
+  if(m.rel === 'ally'){ addLog('这一刀砍不下去。','r'); return false; }
+  if(dist(G.px,G.py,m.x,m.y) > atkRange()){ addLog('够不着。','r'); return false; }
+  if(run.cls==='bow' && !lineOfSight(G.px,G.py,m.x,m.y,G.tiles)){ addLog('没有射界。','r'); return false; }
+  playerAttack(m, 1.0, false, true);
+  run.hidden = false;
+  endTurn();
+  return true;
+}
+
+function atkRange(){
+  const ws = gearStats('weapon');
+  const extra = ws ? ws.range : 0;
+  return (run.cls==='bow' ? 6 : 1) + extra;
+}
+
+const MAXBAG = 10;
+
+const BOSSDROP = {huaxiong:'huadao', lvbu:'fangtian', dongzhuo:'dongarmor'};
+function dropLoot(m){
+  if(m.boss){
+    if(!run.items) run.items = [];
+    const id = BOSSDROP[m.boss];
+    if(id && run.items.length < MAXBAG){
+      run.items.push(gearFor(id, m.lv||8));
+      metaAddMany('gear',[id]);
+      addLog('从他身上取下 '+ITEMS[id].name+'。','y');
+    } else if(id) addLog(ITEMS[id].name+' 太重，背囊塞不下了。','r');
+    return;
+  }
+  const chance = m.type==='boss' ? 1 : m.type==='elite' ? 0.55 : 0.14;
+  if(Math.random() > chance) return;
+  if(!run.items) run.items = [];
+  if(run.items.length >= MAXBAG){ addLog('背囊满了，只能眼睁睁看着。','r'); return; }
+  const pool = m.type==='boss'    ? ['changdao','armor3','med','pill'] :
+               m.type==='elite'   ? ['dao','armor2','med','oil'] :
+                                    ['med','food','oil','armor1','pill','dao'];
+  const id = pick(pool);
+  const it = ITEMS[id];
+  if(it && (it.type==='weapon' || it.type==='armor')){
+    run.items.push(gearFor(id, m.lv||1));
+    metaAddMany('gear',[id]);
+    addLog('拾得一件器物。','g');
+  } else {
+    run.items.push(id);
+    addLog('拾得 '+ITEMS[id].name+'。','g');
+  }
+}
+
+function useSkill(id, tx, ty){
+  const sk = SKILLS[id];
+  if(!sk || !run.skills.includes(id)) return false;
+  if((run.cd[id]||0) > 0){ addLog('这一手还没缓过来。','r'); return false; }
+  if(run.st < sk.st){ addLog('体力不够。','r'); return false; }
+  if(run.res < sk.res){ addLog(run.resName+'不够。','r'); return false; }
+
+  const d = dist(G.px,G.py,tx,ty);
+  let ok = true;
+  switch(sk.target){
+    case 'enemy': { const m = mobAt(tx,ty); if(!m || d>sk.range) ok=false; break; }
+    case 'tile':  if(d>sk.range || tileAt(tx,ty)===1) ok=false; break;
+    case 'adj':   if(d!==1) ok=false; break;
+    case 'self':  break;
+    case 'dir':   break;
+  }
+  if(!ok){ addLog('打不到那里。','r'); return false; }
+
+  if(id==='ignite'){
+    const p = propAt(tx,ty);
+    if(!p || p.kind!=='grain' || p.burning>0){ addLog('这里点不着。','r'); return false; }
+  }
+  if(id==='hide'){
+    const watched = G.mobs.some(m=>!m.dead && m.rel==='hostile' && m.alert && canEnemySee(m));
+    if(watched){ addLog('有人正看着你，藏不住。','r'); return false; }
+  }
+  if(id==='backstab' && !mobAt(tx,ty)){ addLog('那儿没人。','r'); return false; }
+
+  run.st -= sk.st;
+  run.res -= sk.res;
+  if(sk.cd>0) run.cd[id] = sk.cd;
+  run._rb = 1 + 0.05*brLv(id);
+  const A = mch(id,'a'), B = mch(id,'b');
+
+  switch(id){
+    case 'backstab': {
+      const m = mobAt(tx,ty);
+      if(m){
+        const unaware = (!m.alert || run.hidden);
+        let mult = unaware ? 2.5 : 1.2;
+        if(A) mult = unaware ? (A>=2 ? 3.4 : 3.0) : 1.4;
+        if(B) mult = unaware ? 2.2 : 1.2;
+        if(run.ch && run.ch.c_shadow) mult *= 1.25;
+        playerAttack(m, mult);
+        if(B && !m.dead){ m.bleed = (B>=2?14:10); m.bleedT = 4; addLog('伤口开了口子。','y'); }
+      }
+      break;
+    }
+    case 'hide':
+      run.hidden = true;
+      run.res = clamp(run.res+5,0,run.resMax);
+      if(B) run.shadowDodge = (B>=2?2:1);
+      addLog('你隐入暗处。','g'); break;
+    case 'smoke':
+      G.smoke = {x:G.px, y:G.py, t:3, r: A ? (A>=2?3:2) : 1};
+      if(B) run.smokeBlind = 2;
+      addLog('烟气腾起，视线断了。','g'); break;
+    case 'artery': {
+      const m = mobAt(tx,ty);
+      if(m){
+        m.bleed = A ? (A>=2?16:12) : 8; m.bleedT = 4;
+        if(B){ m.def = Math.max(0, m.def-3); addLog('他的甲松了。','y'); }
+        playerAttack(m, 1.4);
+        if(run.ch && run.ch.c_bloodfire && m.bleed) m.hp -= 6;
+        addLog('血在往外涌。','y');
+      }
+      break;
+    }
+    case 'ignite': {
+      const p = propAt(tx,ty);
+      p.burning = 1;
+      const rad = A ? (A>=2?2:1) : 0;
+      for(let yy=ty-rad; yy<=ty+rad; yy++) for(let xx=tx-rad; xx<=tx+rad; xx++){
+        const q = propAt(xx,yy);
+        if(q && q.kind==='grain' && q.burning<=0) q.burning = 1;
+      }
+      if(B){
+        let extra = 2;
+        G.props.forEach(q=>{
+          if(extra>0 && q.kind==='grain' && q.burning<=0 && dist(q.x,q.y,tx,ty)<=6){ q.burning=1; extra--; }
+        });
+      }
+      addLog('粮堆着了。','y'); G.alarm=clamp(G.alarm+1,0,4);
+      break;
+    }
+    case 'vanish':
+      run.hidden = true;
+      G.mobs.forEach(m=>{
+        m.alert=false;
+        if(m.rel==='hostile') m.whistle={x:G.px, y:G.py, t: A ? (A>=2?14:12) : 8};
+      });
+      if(B) run.shadowCrit = 1;
+      addLog('你从所有视线里消失了。','g'); break;
+
+    case 'lunge': {
+      const m = mobAt(tx,ty);
+      if(m){
+        if(A) run._pierce = 0.5;
+        playerAttack(m, 1.25);
+        if(B && !m.dead) run.res = clamp(run.res+10,0,run.resMax);
+      }
+      break;
+    }
+    case 'brace':
+      run.res = clamp(run.res+ (A?25:15),0,run.resMax);
+      run.brace = 1;
+      if(B) run.braceCrit = 1;
+      addLog('你定了定势，下一击更沉。','y'); break;
+    case 'setSpear':
+      run.spearGuard = 1; addLog('枪立住了，等这一波冲上来。','y'); break;
+    case 'pierceLine': {
+      const ddx = Math.sign(tx-G.px), ddy = Math.sign(ty-G.py);
+      const len = A ? 4 : 3;
+      for(let i=1;i<=len;i++){
+        const m = mobAt(G.px+ddx*i, G.py+ddy*i);
+        if(m){
+          playerAttack(m, 0.7);
+          if(B) run.res = clamp(run.res+5,0,run.resMax);
+        }
+      }
+      break;
+    }
+    case 'holdGate':
+      run.gateGuard = 3; run.gateBonus = A ? 10 : 6;
+      if(B){
+        G.mobs.forEach(m=>{ if(!m.dead && dist(m.x,m.y,G.px,G.py)===1) stepToward(m, G.px - Math.sign(m.x-G.px), G.py - Math.sign(m.y-G.py)); });
+      }
+      addLog('脚底生根。','y'); break;
+    case 'onestrike': {
+      const m = mobAt(tx,ty);
+      if(m){
+        let cap = A ? 6 : 4.5;
+        let mult = clamp(1 + run.res/20, 1, cap);
+        if(run.ch && run.ch.c_surge && run.res>=run.resMax) mult *= 1.25;
+        const resUsed = run.res;
+        playerAttack(m, mult);
+        addLog('一枪，倾尽所有。','y');
+        run.res = (B && m.dead) ? Math.round(resUsed*0.5) : 0;
+      }
+      break;
+    }
+
+    case 'draw':
+      run.res = clamp(run.res+ (A?25:15),0,run.resMax);
+      if(B) run.aimCrit = 1;
+      addLog('引弓，屏息。','y'); break;
+    case 'stepShot': {
+      const dist2 = A ? 2 : 1;
+      const sx = Math.sign(tx-G.px || 0), sy = Math.sign(ty-G.py || 0);
+      for(let k=1;k<=dist2;k++){
+        const bx = G.px - sx, by = G.py - sy;
+        if(walkable(bx,by) && !mobAt(bx,by)){ G.px=bx; G.py=by; }
+      }
+      run.movedThisTurn = true;
+      if(B) run._comboShot = 0.3;
+      const m = mobAt(tx,ty);
+      if(m) playerAttack(m, 1.0);
+      addLog('退一步，放一箭。','y');
+      break;
+    }
+    case 'fireArrow': {
+      const rad = A ? 2 : 1;
+      for(let yy=ty-rad; yy<=ty+rad; yy++) for(let xx=tx-rad; xx<=tx+rad; xx++){
+        const q = propAt(xx,yy);
+        if(q && q.kind==='grain' && q.burning<=0){ q.burning=1; addLog('火箭落处，火起来了。','y'); G.alarm=clamp(G.alarm+1,0,4); }
+      }
+      if(B){
+        G.mobs.forEach(m=>{
+          if(!m.dead && dist(m.x,m.y,tx,ty)<=rad){
+            m.bleed = Math.max(m.bleed||0, 6); m.bleedT = Math.max(m.bleedT||0, 2);
+            addLog(m.name+' 身上着了。','y');
+          }
+        });
+      }
+      break;
+    }
+    case 'rapid': {
+      const m = mobAt(tx,ty);
+      if(m){
+        const shots = A ? 3 : 2;
+        for(let i=0;i<shots;i++){
+          if(m.dead) break;
+          const base = (i===1 && B) ? 0.9 : 0.6;
+          const bonus = (run.ch && run.ch.c_firenet && m.bleedT>0) ? 1.25 : 1;
+          playerAttack(m, base*bonus);
+        }
+      }
+      run.res = clamp(run.res-20, 0, run.resMax);
+      break;
+    }
+    case 'oneArrow': {
+      const m = mobAt(tx,ty);
+      if(m){
+        let cap = A ? 6 : 5;
+        let mult = clamp(1 + run.res/18, 1, cap);
+        if(run.ch && run.ch.c_aim) mult *= 1.3;
+        playerAttack(m, mult);
+        addLog('一矢，尽了准头。','y');
+        run.res = (B && m.dead) ? 20 : 0;
+      }
+      break;
+    }
+    case 'whistle':
+      G.alarm = clamp(G.alarm+ (A?4:3),0,4);
+      G.mobs.forEach(m=>{
+        m.alert=true;
+        m.whistle={x:tx,y:ty,t: (B?8:4)};
+        if(B) m.stun = 2;
+      });
+      addLog('鸣镝破空，全营都听见了。','r'); break;
+  }
+  if(['backstab','artery','lunge','pierceLine','onestrike','stepShot','rapid','oneArrow','whistle'].includes(id)){
+    run.hidden = false;
+  }
+  endTurn();
+  return true;
+}
+
+/* ===== 回合推进 ===== */
+function endTurn(){
+  if(run){ run._shot = 0; run._pierce = 0; }
+  if(!G || G.over) return;
+  G.turn++;
+  G.mobs.forEach(m=>{ if(m.cd>0) m.cd--; });
+
+  // 弓手：站定才有准头，这一回合动过就不回
+  if(run.cls==='bow' && !run.movedThisTurn){
+    run.res = clamp(run.res+10,0,run.resMax);
+  }
+  Object.keys(run.cd).forEach(k=>{ if(run.cd[k]>0) run.cd[k]--; });
+
+  // 燃烧
+  G.props.forEach(p=>{
+    if(p.burning>0){
+      p.hp -= 18; G.alarm = clamp(G.alarm+1,0,4);
+      if(p.hp<=0 && p.burning>0){ p.burning=2; addLog('粮堆烧塌了。','y'); }
+    }
+  });
+  // 火盆周围的木桶会被引燃，粮堆烧到木桶会炸
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    const t=G.tiles[y][x];
+    if(t===6||t===T_BRAZI){
+      [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
+        const nx2=x+dx, ny2=y+dy;
+        if(nx2<0||ny2<0||nx2>=GW||ny2>=GH) return;
+        if(G.tiles[ny2][nx2]===T_BARREL && Math.random()<0.35) explodeBarrel(nx2,ny2);
+      });
+    }
+  }
+  // 尸体被发现会拉高警觉
+  if(G.turn%2===0){
+    G.mobs.forEach(m=>{
+      if(m.dead||m.rel!=='hostile'||m.alert) return;
+      const c = G.mobs.find(o=>o.dead && dist(o.x,o.y,m.x,m.y)<=2);
+      if(c){ m.alert=true; G.alarm=clamp(G.alarm+1,0,4); addLog(m.name+' 发现了尸体。','r'); }
+    });
+  }
+  // 火光会一路引来援兵
+  if(G.props.some(p=>p.burning>0) && G.turn%4===0) G.alarm = clamp(G.alarm+1,0,4);
+
+  // 护着的人跟上来
+  moveEscort();
+
+  // 敌动
+  G.mobs.forEach(m=>{
+    if(m.dead) return;
+    mobTurn(m);
+    if(m.boss==='lvbu' && !m.dead && m.hp < m.max*0.5) mobTurn(m);   // 半血后二动
+  });
+
+  // 烟：敌人已经在这一片里摸过一遍，才算一个回合
+  if(G.smoke){ G.smoke.t--; if(G.smoke.t<=0){ G.smoke=null; addLog('烟散了。',''); } }
+
+  // 走完一个敌方阶段，防御姿态才开始计时
+  if(run.spearGuard > 0) run.spearGuard--;
+  if(run.gateGuard > 0){
+    run.gateGuard--;
+    if(run.gateGuard === 0){ run.gateBonus = 0; addLog('门守不住了。',''); }
+  }
+
+  // 警觉：没人盯着你，慢慢松下来
+  const watched = G.mobs.some(m=>!m.dead && m.rel==='hostile' && m.alert && dist(m.x,m.y,G.px,G.py)<=10);
+  if(!watched && G.turn%3===0) G.alarm = clamp(G.alarm-1,0,4);
+
+  // 增援
+  if(G.alarm>=2 && G.turn%6===0){
+    const n = G.alarm>=4?2:1;
+    for(let i=0;i<n;i++){
+      let x=G.entry.x, y=G.entry.y;
+      for(let t=0;t<20;t++){
+        const nx=G.entry.x+rand(7)-3, ny=G.entry.y+rand(7)-3;
+        if(walkable(nx,ny) && !mobAt(nx,ny)){ x=nx; y=ny; break; }
+      }
+      G.mobs.push(mkMob(pick(['levy','levy2','veteran']), x, y));
+    }
+    addLog('又有脚步声从背后压上来。','r');
+  }
+
+  // 状态
+  if(run.hp<=0){ die(); return; }
+  run.movedThisTurn = false;      // 回合清账，下一回合重新记录
+  computeFOV();
+  checkObjective();
+  renderAll();
+  saveGame();
+}
+
+/* 被护送的人跟着玩家走，一步一格 */
+function moveEscort(){
+  if(!G) return;
+  G.items.forEach(it=>{
+    if(!it.isEscort || !it.taken || it.dead) return;
+    if(dist(it.x,it.y,G.px,G.py) <= 1) return;
+    const path = bfsPath(it.x, it.y, G.px, G.py);
+    if(path && path.length){
+      const [nx,ny]=path[0];
+      if(!mobAt(nx,ny) && walkable(nx,ny)){ it.x=nx; it.y=ny; }
+    }
+  });
+}
+
+/* ===== 敌人 AI ===== */
+const MOBROLE = {levy:'inf', levy2:'scout', brute:'elite', soldier:'inf', archer:'archer',
+                 veteran:'spear', guard:'shield', elite:'cav', sapper:'fire', boss:'gen'};
+function mobRole(m){ return MOBROLE[m.type] || 'inf'; }
+
+const BOSSSKILL = {
+  huaxiong:{k:'cleave', t:'抡刀蓄力，要一刀把人劈成两半。'},
+  lvbu:    {k:'sweep',  t:'画戟横扫，三步之内都是刃。'},
+  dongzhuo:{k:'smash',  t:'举刀过顶，要砸碎这一片地。'}
+};
+
+function bossTurn(m){
+  const d = dist(m.x,m.y,G.px,G.py);
+  if(m.boss==='lvbu' && !m.p2 && m.hp < m.max*0.5){
+    m.p2 = true; m.atk += 6;
+    addLog('吕布的眼睛红了。他不再留手。','r');
+  }
+  const sk = BOSSSKILL[m.boss] || BOSSSKILL.huaxiong;
+  if(!m.tele && d<=4 && G.turn - (m.lastTele||-9) >= 2){
+    m.lastTele = G.turn;
+    startTele(m, sk.k, sk.t);
+    return;
+  }
+  if(d<=1) mobAttackPlayer(m);
+  else stepToward(m,G.px,G.py);
+}
+
+function alarmUp(n){
+  const old = G.alarm;
+  G.alarm = clamp(G.alarm+n,0,4);
+  if(G.alarm===old) return;
+  const nm = ['未察觉','起疑','搜寻','警戒','追杀'][G.alarm];
+  addLog('警觉升到 '+G.alarm+' 级：'+nm+'。','r');
+  toast('警觉 '+G.alarm+' 级 · '+nm, G.alarm>=3);
+  const el=document.getElementById('tb-alarm');
+  if(el){ el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
+}
+function reinforce(src){
+  let n=0;
+  for(let k=0;k<60 && n<2;k++){
+    const x=src.x+rand(11)-5, y=src.y+rand(11)-5;
+    if(x>1&&y>1&&x<GW-1&&y<GH-1 && walkable(x,y) && !mobAt(x,y)){
+      const mob=mkMob(Math.random()<0.5?'levy':'soldier',x,y);
+      mob.alert=true; G.mobs.push(mob); n++;
+    }
+  }
+  if(n) addLog('援兵从暗处涌出来，围了上来。','r');
+}
+
+/* 木桶爆炸：范围 1 内全体受伤，并把周围粮草点着 */
+function explodeBarrel(x,y){
+  if(tileAt(x,y)!==T_BARREL) return false;
+  G.tiles[y][x] = 0;
+  addLog('木桶炸开了！','y');
+  G.mobs.forEach(m=>{
+    if(!m.dead && dist(m.x,m.y,x,y)<=1) m.hp -= 20 + rand(8);
+  });
+  if(dist(G.px,G.py,x,y)<=1) run.hp -= Math.max(1, 14 + rand(6) - Math.round(pDef()*0.5));
+  G.props.forEach(p2=>{ if(dist(p2.x,p2.y,x,y)<=2 && p2.burning<=0) p2.burning=1; });
+  for(let yy=y-1;yy<=y+1;yy++) for(let xx=x-1;xx<=x+1;xx++){
+    if(xx<0||yy<0||xx>=GW||yy>=GH) continue;
+    if(tileAt(xx,yy)===T_BRAZI) G.tiles[yy][xx]=6;
+  }
+  G.alarm = clamp(G.alarm+1,0,4);
+  return true;
+}
+
+function startTele(m, kind, txt){
+  m.tele = {kind, t:1};
+  addLog(m.name + txt, 'r');
+  G.hasTele = true;
+}
+function applyTele(m){
+  const k = m.tele.kind; m.tele = null;
+  if(k==='thrust'){
+    if(dist(m.x,m.y,G.px,G.py)<=2 && inLine(m,G.px,G.py)){ mobAttackPlayer(m, 1.55); }
+    else addLog(m.name+' 一枪刺空。','');
+  } else if(k==='volley'){
+    if(dist(m.x,m.y,G.px,G.py)<=m.range) mobAttackPlayer(m, 1.25);
+    else addLog(m.name+' 的箭落了空。','');
+  } else if(k==='charge'){
+    let hits=0;
+    for(let k2=0;k2<3;k2++){
+      const nx=m.x+Math.sign(G.px-m.x), ny=m.y+Math.sign(G.py-m.y);
+      if(!walkable(nx,ny)||mobAt(nx,ny)) break;
+      m.x=nx; m.y=ny;
+      if(dist(m.x,m.y,G.px,G.py)<=1) break;
+    }
+    if(dist(m.x,m.y,G.px,G.py)<=1) mobAttackPlayer(m, 1.7);
+    else addLog(m.name+' 冲了个空。','');
+  } else if(k==='smash'){
+    if(dist(m.x,m.y,G.px,G.py)<=2) mobAttackPlayer(m, 1.5);
+    else addLog(m.name+' 重击砸在地上，土石四溅。','');
+  } else if(k==='sweep'){
+    if(dist(m.x,m.y,G.px,G.py)<=3 && inLine(m,G.px,G.py)) mobAttackPlayer(m, 1.85);
+    else addLog(m.name+' 横扫落了空，戟风刮过耳边。','');
+  } else if(k==='cleave'){
+    if(dist(m.x,m.y,G.px,G.py)<=1) mobAttackPlayer(m, 1.7);
+    else addLog(m.name+' 一刀劈空。','');
+  } else if(k==='ignite'){
+    let done=false;
+    G.props.forEach(p2=>{ if(!done && p2.burning<=0 && dist(p2.x,p2.y,m.x,m.y)<=1){ p2.burning=1; done=true; } });
+    addLog(done? m.name+' 把粮堆点着了。' : m.name+' 的火把凑了个空。', done?'r':'');
+    if(done) G.alarm = clamp(G.alarm+1,0,4);
+  }
+}
+function inLine(m,tx,ty){
+  const dx=Math.sign(tx-m.x), dy=Math.sign(ty-m.y);
+  if(dx!==0 && dy!==0) return false;
+  let x=m.x+dx, y=m.y+dy;
+  while(x!==tx||y!==ty){
+    if(!walkable(x,y)) return false;
+    x+=dx; y+=dy;
+  }
+  return true;
+}
+function retreatStep(m){
+  const dx=Math.sign(m.x-G.px), dy=Math.sign(m.y-G.py);
+  if(step(m,dx,dy)) return true;
+  if(step(m,dx,0)) return true;
+  if(step(m,0,dy)) return true;
+  return false;
+}
+
+function mobTurn(m){
+  if(m.rel!=='hostile'){
+    if(m.rel==='ally') allyTurn(m);
+    return;
+  }
+  if(m.stun>0){ m.stun--; addLog(m.name+' 还在乱转。',''); return; }
+  if(m.waver>0){ m.waver--; return; }   // 军心散，站着不动
+  if(m.bleedT>0){
+    m.hp -= m.bleed; m.bleedT--;
+    if(m.hp<=0){ m.dead=true; noteBossKill(m); addLog(m.name+' 血尽而倒。','g'); return; }
+  }
+  if(m.tele){ applyTele(m); return; }   // 蓄力先结算，Boss 与杂兵同规
+  if(m.boss){ m.alert = true; bossTurn(m); return; }
+  const d = dist(m.x,m.y,G.px,G.py);
+  const canSee = (!run.hidden || d<=2) && canEnemySee(m);
+  if(canSee && !m.alert){
+    m.alert = true;
+    if(!G.alarmTurn || G.turn - G.alarmTurn >= 3){   // 三次呼吸才升一级
+      G.alarm = clamp(G.alarm+1,0,4);
+      G.alarmTurn = G.turn;
+    }
+    addLog(m.name+' 发现了你。','r');
+  }
+  // 诱饵：鸣镝落点、绝影留下的旧影
+  if(m.whistle){
+    if(m.whistle.t>0){
+      m.whistle.t--;
+      if(!canSee && dist(m.x,m.y,m.whistle.x,m.whistle.y)>0){
+        stepToward(m, m.whistle.x, m.whistle.y);
+        return;
+      }
+    } else m.whistle = null;
+  }
+  if(!m.alert){
+    // 警觉 2 级以上：没看见也要往你最后露面的地方搜
+    if(G.alarm>=2 && G.lastSeen && dist(m.x,m.y,G.lastSeen.x,G.lastSeen.y)<=12){
+      stepToward(m, G.lastSeen.x, G.lastSeen.y);
+      return;
+    }
+    patrol(m);
+    return;
+  }
+  const role = mobRole(m);
+  // 预警起手
+  if(role==='spear' && d===2 && inLine(m,G.px,G.py) && Math.random()<0.7){
+    startTele(m,'thrust','压低枪尖，准备突刺。');
+    return;
+  }
+  if(role==='archer' && d>=2 && d<=m.range && Math.random()<0.55){
+    startTele(m,'volley','张弓搭箭，准备齐射。');
+    return;
+  }
+  if(role==='cav' && d>=3 && d<=7 && inLine(m,G.px,G.py)){
+    startTele(m,'charge','勒马蓄势，准备冲锋。');
+    return;
+  }
+  if(role==='gen' && m.hp < m.max*0.5 && d<=3 && Math.random()<0.5){
+    startTele(m,'smash','举刃过顶，准备重击。');
+    return;
+  }
+
+  if(role==='inf' || role==='elite'){
+    if(d<=1) mobAttackPlayer(m);
+    else if(role==='elite' && d>=3 && Math.random()<0.5){
+      // 精锐包夹：从玩家另一侧的空位贴上去
+      const cands = DIRS.map(([dx,dy])=>({x:G.px+dx,y:G.py+dy}))
+        .filter(c=>walkable(c.x,c.y) && !mobAt(c.x,c.y) && dist(c.x,c.y,m.x,m.y)>d);
+      if(cands.length && stepToward(m,cands[0].x,cands[0].y)) return;
+      stepToward(m,G.px,G.py);
+    } else stepToward(m,G.px,G.py);
+    return;
+  }
+  if(role==='spear'){
+    if(d<=1){ if(!retreatStep(m)) mobAttackPlayer(m); return; }
+    if(d===2) mobAttackPlayer(m);
+    else stepToward(m,G.px,G.py);
+    return;
+  }
+  if(role==='archer'){
+    if(d>m.range) stepToward(m,G.px,G.py);
+    else if(d<=1) retreatStep(m);
+    else mobAttackPlayer(m);
+    return;
+  }
+  if(role==='shield'){
+    const ward = G.mobs.find(o=>!o.dead && o.rel==='hostile' && o!==m && (mobRole(o)==='archer'||mobRole(o)==='gen') && dist(o.x,o.y,m.x,m.y)<=4);
+    if(ward && d>1){
+      const gx=(ward.x+G.px)/2, gy=(ward.y+G.py)/2;
+      stepToward(m, Math.round(gx), Math.round(gy));
+      return;
+    }
+    if(d<=1){ m.guardT=1; mobAttackPlayer(m); }
+    else stepToward(m,G.px,G.py);
+    return;
+  }
+  if(role==='cav'){
+    if(d<=1){ mobAttackPlayer(m); if(Math.random()<0.6) retreatStep(m); }
+    else stepToward(m,G.px,G.py);
+    return;
+  }
+  if(role==='scout'){
+    if(!m.called && d<=6){
+      m.called = true;
+      G.alarm = clamp(G.alarm+1,0,4);
+      addLog(m.name+' 吹响号角，援兵将至。','r');
+      reinforce(m);
+      return;
+    }
+    if(d<=1) mobAttackPlayer(m);
+    else if(d<=3) retreatStep(m);
+    else stepToward(m,G.px,G.py);
+    return;
+  }
+  if(role==='fire'){
+    let best=null, bd=999;
+    G.props.forEach(p2=>{ const pd=dist(m.x,m.y,p2.x,p2.y); if(p2.hp>0 && p2.burning<=0 && pd<bd){bd=pd;best=p2;} });
+    if(best && bd<d){
+      if(bd<=1 && !m.teleDone){
+        m.teleDone = true;
+        startTele(m,'ignite','举着火把凑近粮堆。');
+        return;
+      }
+      if(bd<=1){ best.burning=1; addLog(m.name+' 点着了粮草。','r'); G.alarm=clamp(G.alarm+1,0,4); }
+      else stepToward(m,best.x,best.y);
+      return;
+    }
+  }
+  if(d<=1){ mobAttackPlayer(m); }
+  else stepToward(m,G.px,G.py);
+}
+
+function patrol(m){
+  if(m.patrol && m.patrol.length){
+    const p2 = m.patrol[m.pi||0];
+    if(p2){
+      if(dist(m.x,m.y,p2.x,p2.y)<=1){ m.pi=((m.pi||0)+1)%m.patrol.length; }
+      else stepToward(m,p2.x,p2.y);
+      return;
+    }
+  }
+  if(Math.random()<0.4){
+    const dx=[-1,0,1][rand(3)], dy=[-1,0,1][rand(3)];
+    step(m,dx,dy);
+  }
+}
+
+function allyTurn(m){
+  if(m.bleedT>0){
+    m.hp -= m.bleed; m.bleedT--;
+    if(m.hp<=0){ m.dead=true; noteBossKill(m); addLog(m.name+' 血尽而倒。',''); return; }
+  }
+  for(const [dx,dy] of DIRS){
+    const o = mobAt(m.x+dx, m.y+dy);
+    if(o && o.rel==='hostile'){ mobAttackMob(m,o); return; }
+  }
+  if(dist(m.x,m.y,G.px,G.py) > 2) stepToward(m, G.px, G.py);
+}
+
+function mobAttackMob(a,b){
+  if(a.cd>0) return;
+  const chance = clamp(0.40 + (a.atk-b.def)/45, 0.15, 0.90);
+  if(Math.random()<chance){
+    const dmg = Math.max(1, a.atk-b.def+rand(3));
+    b.hp -= dmg;
+    addLog(a.name+' 伤了 '+b.name+'  -'+dmg,'');
+    if(b.hp<=0){ b.dead=true; addLog(b.name+' 倒下。',''); }
+  } else addLog(a.name+' 失手。','');
+  a.cd = 1;
+}
+
+/* 四邻 BFS：一次算清最短路，绝不往墙里钻 */
+function bfsPath(sx, sy, tx, ty, ignoreMobs){
+  ignoreMobs = (ignoreMobs !== false);
+  if(sx===tx && sy===ty) return [];
+  const goals = new Set();
+  if(tx===G.px && ty===G.py){
+    // 目标是玩家本人：走到任意一格相邻位即可
+    for(const [dx,dy] of DIRS){
+      const gx=G.px+dx, gy=G.py+dy;
+      if(walkable(gx,gy) && !mobAt(gx,gy)) goals.add(gy*GW+gx);
+    }
+    if(!goals.size) return null;
+  } else {
+    goals.add(ty*GW+tx);
+  }
+  const q=[[sx,sy]], seen=new Set(), prev=new Map();
+  seen.add(sy*GW+sx);
+  while(q.length){
+    const [x,y]=q.shift();
+    for(const [dx,dy] of R4){
+      const nx=x+dx, ny=y+dy;
+      if(!walkable(nx,ny)) continue;
+      const k=ny*GW+nx;
+      if(seen.has(k)) continue;
+      if(nx===G.px && ny===G.py) continue;   // 人挡人，绕开
+      if(!ignoreMobs && (nx!==tx || ny!==ty)){
+        if(mobAt(nx,ny)) continue;      // 路径规划时忽略会动的人，真走再避让
+      }
+      seen.add(k); prev.set(k,[x,y]);
+      if(goals.has(k)){
+        const path=[]; let cx=nx, cy=ny;
+        while(!(cx===sx && cy===sy)){
+          path.push([cx,cy]);
+          const pv=prev.get(cy*GW+cx);
+          if(!pv) break;
+          cx=pv[0]; cy=pv[1];
+        }
+        return path.reverse();
+      }
+      q.push([nx,ny]);
+    }
+  }
+  return null;
+}
+
+function stepToward(m,tx,ty){
+  const path = bfsPath(m.x,m.y,tx,ty,true);
+  if(path && path.length){
+    const [nx,ny] = path[0];
+    if(!mobAt(nx,ny) && !(nx===G.px&&ny===G.py)){ m.x = nx; m.y = ny; return true; }
+  }
+  return false;
+}
+
+function step(m,dx,dy){
+  const nx=m.x+dx, ny=m.y+dy;
+  if(!walkable(nx,ny)) return false;
+  if(nx===G.px && ny===G.py) return false;
+  if(mobAt(nx,ny)) return false;
+  m.x=nx; m.y=ny;
+  if(G.tiles[ny][nx]===T_TRAP){
+    m.hp -= 8 + rand(6);
+    G.tiles[ny][nx] = 0;
+    addLog(m.name+' 踩进坑里。','y');
+    if(m.hp<=0){ m.dead=true; noteBossKill(m); addLog(m.name+' 没爬起来。','g'); }
+  }
+  return true;
+}
+
+function mobAttackPlayer(m, mult){
+  if(m.cd>0) return;
+  mult = mult||1;
+
+  // 身边的人更好杀，就先砍他
+  const es = G.items.find(i=>i.isEscort && i.taken && !i.dead && dist(i.x,i.y,m.x,m.y)===1);
+  if(es && Math.random()<0.55){
+    const chance = clamp(0.55 + (m.atk - 4)/45, 0.20, 0.92);
+    if(Math.random()<chance){
+      const dmg = Math.max(1, m.atk - 4 + rand(3));
+      es.hp -= dmg;
+      addLog(m.name+' 砍向随行的人  -'+dmg,'r');
+      if(es.hp<=0){
+        es.dead = true;
+        G.objFailed = true;
+        addLog('随行的人倒下了。这一趟白走了。','r');
+      }
+    } else addLog(m.name+' 追着随行的人挥空。','');
+    m.cd = 1;
+    return;
+  }
+
+  const pm = tileMods(G.px,G.py);
+  const em = tileMods(m.x,m.y);
+  let chance = clamp(0.40 + (m.atk-pDef())/45 - pEva()/100 - pm.cover + em.hit, 0.10, 0.92);
+  if(run.cls==='spear' && run.spearGuard>0){
+    chance *= (run.ch && run.ch.c_wall) ? 0.15 : (mch('setSpear','a') ? 0.30 : 0.50);
+  }
+  if(run.smokeBlind>0){ chance -= 0.20; run.smokeBlind--; }
+  chance = clamp(chance, 0.05, 0.95);
+  if(Math.random()<chance){
+    if(run.shadowDodge>0){
+      run.shadowDodge--;
+      addLog('影替——这一下落在空处。','g');
+      m.cd = 1;
+      return;
+    }
+    let dmg = Math.max(1, Math.round((m.atk - pDef() + rand(4)) * mult));
+    run.hp -= dmg;
+    G.hitT = nowT(); G.shake = nowT();
+    pushFx(G.px, G.py, '-'+dmg, 'hurt');
+    sfx('hurt');
+    addLog(m.name+' 击中你  -'+dmg,'r');
+    if(run.cls==='spear') run.res = clamp(run.res-15,0,run.resMax);
+    if(run.cls==='bow') run.res = clamp(run.res-10,0,run.resMax);
+    if(run.cls==='spear' && run.spearGuard>0){
+      addLog('你反手一枪。','y');
+      const wsG = gearStats('weapon');
+      playerAttack(m, 0.8 + (wsG?wsG.guardBoost:0) + (mch('setSpear','b')?0.5:0), true);
+    }
+  } else {
+    pushFx(G.px, G.py, '闪开', 'miss');
+    addLog(m.name+' 扑空。','');
+    if(run.cls==='spear') run.res = clamp(run.res-6,0,run.resMax);
+  }
+  m.cd = 1;
+}
+
+/* ===== 目标判定 ===== */
+function checkObjective(){
+  if(!G || !G.obj) return;
+  const o = G.obj;
+  let done=false;
+  if(o.type==='burn'){
+    G.objDone = G.props.filter(p=>p.burning>=2 || p.hp<=0).length;
+    done = G.objDone >= o.need;
+  } else if(o.type==='protect'){
+    const alive = G.props.filter(p=>p.hp>0).length;
+    G.objDone = alive;
+    const enemies = G.mobs.filter(m=>!m.dead && m.rel==='hostile').length;
+    done = alive >= o.need && enemies===0;
+  } else if(o.type==='kill'){
+    const t = G.mobs.find(m=>m.isTarget);
+    done = !t || t.dead;
+    G.objDone = done?1:0;
+  } else if(o.type==='clear'){
+    done = G.mobs.filter(m=>!m.dead && m.rel==='hostile').length===0;
+    G.objDone = G.mobs.filter(m=>m.dead).length;
+  } else if(o.type==='steal'){
+    // 东西捡到手，再走到出口才算带出去
+    const it = G.items[0];
+    done = !!(it && it.taken);
+    G.objDone = done?1:0;
+  } else if(o.type==='escort'){
+    const it = G.items.find(i=>i.isEscort);
+    const alive = !!(it && it.taken && !it.dead);
+    if(it && it.dead) G.objFailed = true;
+    done = alive && dist(it.x,it.y,G.px,G.py)<=1 && !!G.atExit;
+    G.objDone = done?1:0;
+  }
+  if(done && !G.objComplete){
+    G.objComplete = true;
+    addLog('事已办了。找出口。','g');
+    toast('事已办了 · 找出口', true);
+    sfx('win');
+  }
+  return done;
+}
+
+/* ===== 结束 ===== */
+function tryEscape(){
+  if(!G || G.over) return;
+  if(!G.atExit){ addLog('还没到出口。','r'); return; }
+  finishTask(true);
+}
+
+function finishTask(escaped){
+  if(G.over) return;
+  G.over = true;
+  const done = checkObjective();
+  const alarm = G.alarm;
+  let grade, text;
+  if(run.hp<=0){
+    grade='dead'; text='你没能走出这一夜。';
+  } else if(done && escaped){
+    if(alarm<=2){ grade='success'; text='干净利落。没人看见，也没人追。'; }
+    else { grade='partial'; text='事办成了，但留下了痕迹。'; }
+  } else if(done && !escaped){
+    grade='success'; text='事办成了。';
+  } else if(escaped){
+    grade='failure'; text='你跑了出来，事没办成。';
+  } else {
+    grade='aborted'; text='撑不住了，只能走。';
+  }
+  const expGain = grade==='success' ? (escaped?70:95)
+                : grade==='partial' ? 55
+                : grade==='failure' ? 25
+                : 12;
+  addExp(expGain);
+  G.result = {grade, text, done, escaped, alarm, kills:run.kills, turn:G.turn, objDone:G.objDone, exp:expGain};
+  applyOutcome();
+  renderAll();
+  showResult();
+}
+
+function noteBossKill(m){
+  if(m && m.boss) metaAdd('codex', 'kill_'+m.boss);
+}
+function die(){
+  sfx('dead');
+  if(G.over) return;
+  G.over=true;
+  G.result = {grade:'dead', text:'血尽于此。', done:false, escaped:false, alarm:G.alarm, kills:run.kills, turn:G.turn, objDone:G.objDone};
+  applyOutcome();
+  showDeath();
+}
+
+/* ===== 结算写回世界 ===== */
+function applyOutcome(){
+  const c = G.cfg, r = G.result;
+  if(!c) return;
+  const fac = (c.reward && c.reward.fac) || {};
+  const mult = r.grade==='success'?1 : r.grade==='partial'?0.6 : r.grade==='failure'?0.2 : 0;
+  Object.keys(fac).forEach(k=>{
+    if(W.factions[k]){
+      const v = fac[k];
+      const ff = W.factions[k];
+      ff.mil = clamp(ff.mil + v*mult, 5, 100);
+      ff.mor = clamp(ff.mor + v*mult*0.8, 5, 100);
+      ff.trust = clamp(ff.trust + v*mult*1.2, 0, 100);
+      ff.sup = clamp(ff.sup + v*mult*0.5, 0, 100);
+    }
+  });
+  run.fame += Math.round(((c.reward && c.reward.fame)||0) * mult);
+  if(r.grade==='success') W.flags['last_clean_'+W.evIdx]=true;
+  if(G.alarm>=3) W.flags['noisy_'+W.evIdx]=true;
+  facTick();
+}
+
+/* ===== 渲染 ===== */
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+const GLYPH = {levy:'贼',levy2:'贼',brute:'力',soldier:'兵',archer:'弓',veteran:'卒',guard:'卫',elite:'将',sapper:'火',boss:'帅'};
+
+function renderAll(){
+  updateTopbar();
+  updateSkills();
+  renderCanvas();
+}
+
+function updateTopbar(){
+  if(!run) return;
+  document.getElementById('tb-year').textContent = W.year;
+  document.getElementById('tb-cls').textContent = run.name;
+  document.getElementById('tb-lv').textContent = 'Lv.'+run.lv;
+  document.getElementById('tb-hp').textContent = Math.max(0,run.hp)+'/'+run.maxhp;
+  document.getElementById('tb-st').textContent = Math.floor(run.st);
+  document.getElementById('tb-resname').textContent = run.resName;
+  document.getElementById('tb-res').textContent = Math.floor(run.res);
+  const thEl = document.getElementById('tb-theme');
+  if(thEl) thEl.textContent = G && G.cfg ? (THEME_NAME[G.cfg.mood==='palace'?'palace':G.cfg.theme] || '野地') : '—';
+  const al = G? G.alarm : 0;
+  const alName = ['未察觉','起疑','搜寻','警戒','追杀'][al] || '';
+  document.getElementById('tb-alarm').textContent = G? (al+' '+alName) : 0;
+  document.getElementById('tb-fame').textContent = run.fame;
+  document.getElementById('tb-sp').textContent = run.sp||0;
+  const tk = document.getElementById('tb-task');
+  if(G && G.obj){
+    let s='';
+    if(G.obj.type==='burn') s=`纵火 ${G.objDone||0}/${G.obj.need}`;
+    else if(G.obj.type==='protect') s=`守粮 ${G.objDone||0}/${G.obj.need}`;
+    else if(G.obj.type==='kill') s=G.objComplete?'已斩':'未斩';
+    else if(G.obj.type==='steal') s=G.objComplete?'得手':'未得手';
+    else if(G.obj.type==='escort') s=G.objComplete?'已接':'未接';
+    else if(G.obj.type==='clear') s=`残余 ${G.mobs.filter(m=>!m.dead && m.rel==='hostile').length}`;
+    tk.textContent = s;
+  } else tk.textContent = '';
+}
+
+function updateSkills(){
+  const box = document.getElementById('skills');
+  if(!run){ box.innerHTML=''; return; }
+  box.innerHTML = run.skills.map((id,i)=>{
+    const s = SKILLS[id];
+    const locked = run.lv < s.lv;
+    const cdd = run.cd[id]||0;
+    const cls = locked?'skill dead':(UI.pending===id?'skill on':'skill');
+    return `<div class="${cls}" data-sk="${id}">
+      <span class="nm">${i+1}. ${s.name}${locked?'（未成）':''}</span>
+      <span class="cs">${locked? 'Lv'+s.lv : (cdd>0?cdd+'回合':((run.rank&&run.rank[id])?'阶'+run.rank[id]:'')) }</span>
+    </div>`;
+  }).join('');
+  [...box.querySelectorAll('[data-sk]')].forEach(el=>{
+    el.onclick = ()=>{
+      const id = el.dataset.sk;
+      if(run.lv < SKILLS[id].lv) return;
+      if(UI.mode==='aim' && UI.pending===id){ clearAim(); return; }
+      beginAim(id);
+    };
+  });
+}
+
+function X(x){ return (x-camX)*TS; }
+function Y(y){ return (y-camY)*TS; }
+
+/* ===== 第五批渲染：材质、建筑、火烟水、人形 ===== */
+let ANIM_T=0;
+function nowT(){
+  if(typeof performance!=='undefined' && performance.now) return performance.now()/1000;
+  return Date.now()/1000;
+}
+function hash2(x,y,k){
+  let n = (x*374761393 + y*668265263 + (k||0)*1274126177);
+  n = (n ^ (n>>>13)) * 1274126177;
+  n = n ^ (n>>>16);
+  return ((n>>>0) % 1000)/1000;
+}
+const TH_BASE = {
+  camp:['#463d2a','#483f2c'], town:['#3d3931','#3f3b33'],
+  palace:['#39322c','#3b342e'], mountain:['#3b372f','#3d3931'],
+  ford:['#363f39','#38413b'], granary:['#453e2d','#47402f']
+};
+function themeOf(){ return (G.cfg && (G.cfg.mood==='palace'?'palace':G.cfg.theme)) || 'camp'; }
+
+function drawGround(x,y,t,vis){
+  const th=themeOf();
+  const base=(TH_BASE[th]||TH_BASE.camp)[(x+y)%2];
+  ctx.fillStyle=base; ctx.fillRect(X(x),Y(y),TS,TS);
+  const h=hash2(x,y,1);
+  // 砂砾质感
+  for(let i=0;i<4;i++){
+    const r=hash2(x,y,20+i), r2=hash2(x,y,40+i);
+    ctx.fillStyle = r>0.55? 'rgba(240,224,186,.05)' : 'rgba(0,0,0,.11)';
+    ctx.fillRect(X(x)+r*TS, Y(y)+r2*TS, 2+r*2.5, 2+r2*2);
+  }
+  if(th==='town'){
+    ctx.strokeStyle='rgba(18,15,12,.55)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(X(x),Y(y)+TS*.5); ctx.lineTo(X(x)+TS,Y(y)+TS*.5); ctx.stroke();
+  } else if(th==='palace'){
+    ctx.strokeStyle='rgba(20,16,12,.5)'; ctx.lineWidth=1;
+    ctx.strokeRect(X(x)+.5,Y(y)+.5,TS-1,TS-1);
+    if(h>.8){ ctx.fillStyle='rgba(190,150,80,.07)'; ctx.fillRect(X(x)+4,Y(y)+4,TS-8,TS-8); }
+  } else if(th==='camp'||th==='granary'){
+    if(h>.5){ ctx.fillStyle='rgba(120,96,52,.15)'; ctx.fillRect(X(x)+h*TS*.7,Y(y)+h*TS*.45,2,2); }
+    if(h>.86){ ctx.fillStyle='rgba(90,110,60,.13)'; ctx.fillRect(X(x)+5,Y(y)+TS-8,3,2); }
+  } else if(th==='mountain'){
+    if(h>.4){ ctx.fillStyle='rgba(150,140,120,.10)'; ctx.beginPath(); ctx.arc(X(x)+h*TS,Y(y)+h*TS*.8,1.7,0,7); ctx.fill(); }
+  } else if(th==='ford'){
+    ctx.strokeStyle='rgba(150,190,190,.09)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(X(x)+3,Y(y)+TS*.45); ctx.lineTo(X(x)+TS-3,Y(y)+TS*.55); ctx.stroke();
+  }
+  if(t===3 && vis){
+    const g=hash2(x,y,3);
+    ctx.strokeStyle='rgba(110,132,78,.55)'; ctx.lineWidth=1;
+    for(let i=0;i<3;i++){
+      const gx=X(x)+6+g*18+i*5, gy=Y(y)+TS-5;
+      ctx.beginPath(); ctx.moveTo(gx,gy); ctx.lineTo(gx+1.4, gy-3-hash2(x,y,10+i)*4); ctx.stroke();
+    }
+  }
+  if(!vis){ ctx.fillStyle='rgba(6,6,8,.62)'; ctx.fillRect(X(x),Y(y),TS,TS); }
+}
+
+function drawWall(x,y,vis){
+  const px=X(x), py=Y(y), th=themeOf(), h=hash2(x,y,7);
+  if(th==='camp'){
+    ctx.fillStyle=vis?'#5c4a32':'#2b2318'; ctx.fillRect(px,py,TS,TS);
+    ctx.strokeStyle='rgba(18,13,8,.5)'; ctx.lineWidth=1;
+    for(let i=1;i<4;i++){ ctx.beginPath(); ctx.moveTo(px+i*TS/4,py+2); ctx.lineTo(px+i*TS/4,py+TS-2); ctx.stroke(); }
+    ctx.fillStyle=vis?'rgba(222,180,112,.52)':'rgba(110,95,66,.34)';
+    ctx.fillRect(px,py,TS,3);
+    if(h>.72){
+      ctx.fillStyle=vis?'#17110b':'#0d0a06';
+      ctx.beginPath(); ctx.moveTo(px+TS*.34,py+TS); ctx.lineTo(px+TS*.5,py+TS*.42); ctx.lineTo(px+TS*.66,py+TS); ctx.fill();
+    }
+  } else if(th==='town'){
+    const g=ctx.createLinearGradient(px,py,px,py+TS);
+    g.addColorStop(0, vis?'#6a5a44':'#322a20'); g.addColorStop(1, vis?'#453a2c':'#221d14');
+    ctx.fillStyle=g; ctx.fillRect(px,py,TS,TS);
+    if(h>.52){
+      ctx.fillStyle=vis?'rgba(28,23,18,.72)':'rgba(16,13,10,.7)';
+      for(let i=0;i<4;i++) ctx.fillRect(px+3+i*9, py+2, 7, TS-4);
+      ctx.fillStyle=vis?'rgba(198,158,96,.18)':'rgba(90,75,50,.16)';
+      ctx.fillRect(px,py+TS-4,TS,3);
+    }
+    ctx.strokeStyle='rgba(14,11,8,.6)'; ctx.strokeRect(px+.5,py+.5,TS-1,TS-1);
+  } else if(th==='palace'){
+    const g=ctx.createLinearGradient(px,py,px,py+TS);
+    g.addColorStop(0, vis?'#7a382c':'#36180f'); g.addColorStop(1, vis?'#4c241d':'#24110d');
+    ctx.fillStyle=g; ctx.fillRect(px,py,TS,TS);
+    ctx.fillStyle=vis?'rgba(202,152,62,.42)':'rgba(110,82,38,.24)';
+    ctx.fillRect(px,py,TS,2); ctx.fillRect(px,py+TS-3,TS,2);
+    ctx.strokeStyle=vis?'rgba(190,140,60,.22)':'rgba(110,82,38,.2)';
+    ctx.strokeRect(px+5,py+6,TS-10,TS-12);
+  } else if(th==='mountain'){
+    ctx.fillStyle=vis?'#4c473b':'#242219'; ctx.fillRect(px,py,TS,TS);
+    ctx.fillStyle=vis?'#635c4c':'#302d24';
+    ctx.beginPath(); ctx.moveTo(px+2,py+TS-2); ctx.lineTo(px+TS*.42,py+2); ctx.lineTo(px+TS*.78,py+TS-2); ctx.fill();
+    ctx.strokeStyle='rgba(18,16,12,.55)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(px+TS*.42,py+7); ctx.lineTo(px+TS*.54,py+TS-7); ctx.stroke();
+  } else {
+    ctx.fillStyle=vis?'#564430':'#281f14'; ctx.fillRect(px,py,TS,TS);
+    ctx.strokeStyle='rgba(18,13,8,.55)'; ctx.lineWidth=1;
+    for(let i=1;i<5;i++){ ctx.beginPath(); ctx.moveTo(px,py+i*TS/5); ctx.lineTo(px+TS,py+i*TS/5); ctx.stroke(); }
+    ctx.fillStyle=vis?'rgba(198,162,98,.22)':'rgba(105,90,58,.18)';
+    ctx.fillRect(px,py,TS,2);
+  }
+  ctx.fillStyle='rgba(0,0,0,.28)'; ctx.fillRect(px,py+TS-4,TS,4);
+  ctx.fillStyle='rgba(0,0,0,.16)'; ctx.fillRect(px+TS-3,py,3,TS);
+  if(!vis){ ctx.fillStyle='rgba(6,6,8,.34)'; ctx.fillRect(px,py,TS,TS); }
+}
+
+/* 水火：都在动 */
+function drawFire(cx,cy,r,tms){
+  const p=3;
+  ctx.save();
+  const grad=ctx.createRadialGradient(cx,cy,1,cx,cy,r*2.4);
+  grad.addColorStop(0,'rgba(255,190,90,.55)');
+  grad.addColorStop(.45,'rgba(232,132,44,.28)');
+  grad.addColorStop(1,'rgba(232,132,44,0)');
+  ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(cx,cy,r*2.4,0,7); ctx.fill();
+  for(let i=0;i<3;i++){
+    const ph=tms*3.2+i*2.1;
+    const hgt=r*(1.5+Math.sin(ph)*0.5);
+    const w=r*(0.75+Math.cos(ph*1.3)*0.2);
+    const dx=Math.sin(ph*2.2)*r*0.35;
+    ctx.fillStyle=i===0?'rgba(232,132,44,.85)':(i===1?'rgba(255,190,90,.75)':'rgba(255,238,190,.6)');
+    ctx.beginPath();
+    ctx.moveTo(cx-w+dx,cy+r*.5);
+    ctx.quadraticCurveTo(cx-w*.5+dx, cy-hgt*.6, cx+dx, cy-hgt);
+    ctx.quadraticCurveTo(cx+w*.5+dx, cy-hgt*.6, cx+w+dx, cy+r*.5);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+function drawWater(px,py,x,y,tms,shallow){
+  ctx.fillStyle = shallow?'#2a4242':'#1b3038';
+  ctx.fillRect(px,py,TS,TS);
+  ctx.strokeStyle= shallow?'rgba(150,200,200,.22)':'rgba(120,180,200,.22)';
+  ctx.lineWidth=1;
+  for(let i=0;i<3;i++){
+    const off=Math.sin(tms*1.1+x*0.7+y*0.4+i*1.7)*4;
+    const yy=py+8+i*11;
+    ctx.beginPath();
+    ctx.moveTo(px+3+off, yy);
+    ctx.quadraticCurveTo(px+TS*.45, yy-3, px+TS-3+off, yy+1);
+    ctx.stroke();
+  }
+  if(!shallow){ ctx.fillStyle='rgba(180,230,240,.06)'; ctx.fillRect(px,py,TS,6); }
+}
+
+/* 人形：一眼分得清兵种 */
+function drawFig(cx,cy,o){
+  const s=o.s||1, bob=o.bob||0;
+  ctx.save();
+  ctx.translate(cx,cy+bob); ctx.scale(s,s);
+  const skin=o.skin||'#c8a878';
+  const cloth=o.cloth||'#5a4c34';
+  const metal=o.metal||'#8a8880';
+  ctx.fillStyle='rgba(0,0,0,.34)';
+  ctx.beginPath(); ctx.ellipse(0,15,10.5,3.6,0,0,7); ctx.fill();
+  if(o.cloak){
+    ctx.fillStyle=o.cloak; ctx.globalAlpha=.85;
+    ctx.beginPath(); ctx.moveTo(-7,-4); ctx.lineTo(7,-4); ctx.lineTo(10.5,13); ctx.lineTo(-10.5,13); ctx.fill();
+    ctx.globalAlpha=1;
+  }
+  ctx.fillStyle=o.legs||'#2c2517';
+  ctx.fillRect(-6,4,4.6,11); ctx.fillRect(1.4,4,4.6,11);
+  ctx.fillStyle=cloth;
+  ctx.beginPath(); ctx.moveTo(-7,-2); ctx.lineTo(7,-2); ctx.lineTo(5.5,6.5); ctx.lineTo(-5.5,6.5); ctx.fill();
+  if(o.armor!==false){
+    ctx.fillStyle=metal;
+    ctx.fillRect(-6.4,-1.2,12.8,3.2);
+    ctx.fillRect(-5.2,2.2,10.4,2.2);
+  }
+  ctx.fillStyle=o.skinSleeve||cloth;
+  ctx.fillRect(-9.4,-1.4,3,8.4);
+  ctx.fillRect(6.4,-1.4,3,8.4);
+  ctx.fillStyle=skin; ctx.beginPath(); ctx.arc(0,-8,4.7,0,7); ctx.fill();
+  if(o.helm){
+    ctx.fillStyle=o.helmColor||'#6c6a62';
+    ctx.beginPath(); ctx.arc(0,-9.2,5.4,Math.PI,0); ctx.fill();
+    ctx.fillRect(-5.4,-9.2,10.8,2.2);
+    if(o.plume){ ctx.fillStyle=o.plume; ctx.fillRect(-1.2,-15.5,2.6,6.4); }
+  } else if(o.band){
+    ctx.fillStyle=o.band; ctx.fillRect(-5.2,-11.6,10.4,2.8);
+  }
+  // 兵器
+  if(o.wp==='blade'){
+    ctx.strokeStyle='#c9c2ac'; ctx.lineWidth=2.4;
+    ctx.beginPath(); ctx.moveTo(9,3); ctx.lineTo(17,-8); ctx.stroke();
+    ctx.strokeStyle='#6a5330'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(7.6,5); ctx.lineTo(10,1.6); ctx.stroke();
+  } else if(o.wp==='spear' || o.wp==='halberd'){
+    ctx.strokeStyle='#8a7444'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(10,7); ctx.lineTo(12,-19); ctx.stroke();
+    ctx.fillStyle='#cfc8b0';
+    ctx.beginPath(); ctx.moveTo(12,-27); ctx.lineTo(14.4,-19); ctx.lineTo(9.6,-19); ctx.fill();
+    if(o.wp==='halberd'){
+      ctx.strokeStyle='#cfc8b0'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(12.4,-20); ctx.quadraticCurveTo(19,-22,19.4,-15); ctx.stroke();
+    }
+  } else if(o.wp==='bow'){
+    ctx.strokeStyle='#b08a52'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(11,-2,9,-1.15,1.15); ctx.stroke();
+    ctx.strokeStyle='rgba(230,220,190,.7)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(11+3.6,-10.4); ctx.lineTo(11+3.6,5.6); ctx.stroke();
+  } else if(o.wp==='hammer'){
+    ctx.strokeStyle='#6a5330'; ctx.lineWidth=2.4;
+    ctx.beginPath(); ctx.moveTo(9,4); ctx.lineTo(14,-9); ctx.stroke();
+    ctx.fillStyle='#8d887c'; ctx.fillRect(11.4,-15,7,6);
+  } else if(o.wp==='stick'){
+    ctx.strokeStyle='#7a6140'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(9,5); ctx.lineTo(14,-10); ctx.stroke();
+  } else if(o.wp==='torch'){
+    ctx.strokeStyle='#6a5330'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(9,5); ctx.lineTo(13,-8); ctx.stroke();
+    drawFire(13+cx*0-0,-9,3.4,nowT());
+  }
+  if(o.shield){
+    ctx.fillStyle=o.shieldColor||'#7a6a4a';
+    ctx.strokeStyle='#3a3222'; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.roundRect? ctx.roundRect(-14,-4,7.5,16,2.5) : ctx.rect(-14,-4,7.5,16);
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function mobLook(m){
+  const rel=m.rel;
+  const relTint = rel==='ally'? 'rgba(120,190,120,.35)' : (rel==='neutral'? 'rgba(210,170,70,.35)' : null);
+  const base={ rel, s:1.05 };
+  if(m.boss){
+    return Object.assign(base,{ s:1.32, cloak:'#8a2a22', cloth:'#4a3826', metal:'#b9a06a',
+      helmColor:'#c8a24a', plume:'#d84a2a', wp:(m.boss==='lvbu'?'halberd':'blade'), skin:'#d2b087' });
+  }
+  switch(m.type){
+    case 'levy':   return Object.assign(base,{ cloth:'#5a4a30', band:'#c8a24a', metal:'#7d7364', wp:'stick', armor:false });
+    case 'levy2':  return Object.assign(base,{ cloth:'#6a4a30', band:'#c8963e', metal:'#8a7a5a', wp:'blade' });
+    case 'brute':  return Object.assign(base,{ s:1.16, cloth:'#5a3826', metal:'#9a8a6a', wp:'hammer', helm:true, helmColor:'#7a6a52' });
+    case 'soldier':return Object.assign(base,{ cloth:'#4a5236', metal:'#9aa08a', wp:'spear', helm:true, helmColor:'#77806a' });
+    case 'archer': return Object.assign(base,{ cloth:'#5a5334', metal:'#8a8464', wp:'bow', band:'#8a7a4a' });
+    case 'veteran':return Object.assign(base,{ cloth:'#4a4c38', metal:'#a0a496', wp:'blade', helm:true, helmColor:'#8a8e80', shield:true, shieldColor:'#6a6a58' });
+    case 'guard':  return Object.assign(base,{ cloth:'#39445a', metal:'#a8b0c0', wp:'spear', helm:true, helmColor:'#8a94a8', shield:true, shieldColor:'#586a86' });
+    case 'elite':  return Object.assign(base,{ s:1.2, cloth:'#4a2a3a', metal:'#b0a8b8', wp:'halberd', helm:true, helmColor:'#a08aa8', plume:'#c85a8a', cloak:'#5a2a3a' });
+    case 'sapper': return Object.assign(base,{ cloth:'#6a5230', metal:'#8a7a52', wp:'torch', band:'#c8963e' });
+    default:       return Object.assign(base,{ cloth:'#5a4c34', metal:'#8a8880', wp:'blade' });
+  }
+}
+
+function drawMobUnit(m){
+  const vis = G.visible[m.y] && G.visible[m.y][m.x];
+  const px=X(m.x), py=Y(m.y);
+  const o = mobLook(m);
+  const t=nowT();
+  const flash = m.hitT && (t-m.hitT)<0.22;
+  ctx.save();
+  if(!vis) ctx.globalAlpha=.45;
+  const bob = Math.sin(t*2 + m.x*1.3 + m.y)*0.9;
+  drawFig(px+TS/2, py+TS/2, Object.assign({}, o, {bob:bob}));
+  // 关系描边：绿/黄/红
+  const rc = RELCOL[m.rel]||'#b8563a';
+  ctx.strokeStyle = rc; ctx.lineWidth=1.4; ctx.globalAlpha = vis? .55 : .25;
+  ctx.beginPath(); ctx.ellipse(px+TS/2, py+TS-1.5, TS*.36, 3.6, 0,0,7); ctx.stroke();
+  ctx.globalAlpha=1;
+  if(flash){
+    ctx.fillStyle='rgba(255,240,220,.55)';
+    ctx.fillRect(px+3,py+3,TS-6,TS-6);
+  }
+  // 血条
+  if(vis && (m.hp<m.max || m.boss)){
+    const w=TS*.8, h=3.2;
+    if(m.hpAnim===undefined) m.hpAnim=m.hp;
+    m.hpAnim += (m.hp-m.hpAnim)*0.18*(SET.speed||1);
+    ctx.fillStyle='rgba(10,8,6,.75)'; ctx.fillRect(px+(TS-w)/2, py+TS-6.5, w, h);
+    ctx.fillStyle= m.rel==='ally'? '#6fae5a' : '#b8563a';
+    ctx.fillRect(px+(TS-w)/2, py+TS-6.5, w*clamp(m.hpAnim/m.max,0,1), h);
+    if(m.hpAnim > m.hp+0.5){ // 掉血的余影
+      ctx.fillStyle='rgba(240,200,120,.55)';
+      ctx.fillRect(px+(TS-w)/2 + w*clamp(m.hp/m.max,0,1), py+TS-6.5, w*(clamp(m.hpAnim/m.max,0,1)-clamp(m.hp/m.max,0,1)), h);
+    }
+  }
+  // Boss 标识
+  if(m.boss && vis){
+    ctx.fillStyle='#e8c86a'; ctx.font='bold 10px serif'; ctx.textAlign='center';
+    ctx.fillText('◆', px+TS/2, py-2);
+    ctx.fillStyle='rgba(232,200,106,.14)'; ctx.fillRect(px+1,py+1,TS-2,TS-2);
+  }
+  // 警觉
+  if(vis && m.alert){
+    ctx.fillStyle= m.tele? '#e8842c' : '#d05a3a';
+    ctx.font='bold 11px serif'; ctx.textAlign='center';
+    ctx.fillText(m.tele? '!' : '!', px+TS-3, py+10);
+  }
+  ctx.restore();
+}
+
+function drawPlayerUnit(){
+  const px=X(G.px), py=Y(G.py), t=nowT();
+  const cls=run.cls;
+  const base={ s:1.1, skin:'#e2c9a0', cloth: cls==='dagger'?'#2e2a24':(cls==='bow'?'#3a3426':'#3a3026'),
+    metal:'#9a9384', rel:'#e8d5a3' };
+  if(cls==='dagger') Object.assign(base,{ wp:'blade', band:'#8a2f24', cloak:'#2a2320', cloakSlim:true });
+  if(cls==='spear')  Object.assign(base,{ wp:'spear', helm:true, helmColor:'#8a8a7a', armor:true });
+  if(cls==='bow')    Object.assign(base,{ wp:'bow', band:'#6f9e6a' });
+  if(run.hidden) ctx.globalAlpha=.62;
+  const bob=Math.sin(t*2.2)*0.8;
+  drawFig(px+TS/2, py+TS/2, Object.assign({},base,{bob:bob}));
+  ctx.globalAlpha=1;
+  // 脚下光圈
+  const pulse=.5+Math.sin(t*2.4)*.18;
+  ctx.strokeStyle=`rgba(232,213,163,${0.28+pulse*0.16})`; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.ellipse(px+TS/2, py+TS-2, TS*.36, 4.2, 0,0,7); ctx.stroke();
+  if(run.hidden){
+    ctx.strokeStyle='rgba(140,200,160,.5)'; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.arc(px+TS/2, py+TS/2, TS*.46, 0,7); ctx.stroke(); ctx.setLineDash([]);
+  }
+  if(G.hitT && nowT()-G.hitT<0.25){
+    ctx.fillStyle='rgba(220,60,50,.35)'; ctx.fillRect(px+2,py+2,TS-4,TS-4);
+  }
+  // 血条
+  const w=TS*.82;
+  ctx.fillStyle='rgba(10,8,6,.8)'; ctx.fillRect(px+(TS-w)/2, py+TS-6, w, 3.4);
+  ctx.fillStyle='#c0503a'; ctx.fillRect(px+(TS-w)/2, py+TS-6, w*clamp(run.hp/run.maxhp,0,1), 3.4);
+}
+
+/* 飘字与演出 */
+function pushFx(gx,gy,txt,kind){
+  if(!G) return;
+  if(!G.fx) G.fx=[];
+  const k = kind||'dmg';
+  const base = k==='crit'?1.15:0.9;
+  G.fx.push({gx,gy,txt,kind:k,t0:nowT(),life:base/(SET.speed||1)});
+}
+function toast(txt,big){
+  if(!G) return;
+  G.toast={txt,t0:nowT(),big:!!big};
+}
+function drawFx(){
+  if(!G) return;
+  const t=nowT();
+  if(!G.fx) G.fx=[];
+  G.fx = G.fx.filter(f=>t-f.t0 < (f.life||0.9));
+  G.fx.forEach(f=>{
+    const age=t-f.t0;
+    const p=clamp(age/(f.life||0.9),0,1);
+    const px=X(f.gx)+TS/2, py=Y(f.gy)+TS/2 - age*34;
+    ctx.save();
+    ctx.globalAlpha=clamp(1-p*1.1,0,1);
+    if(f.kind==='crit'){
+      ctx.font='bold 22px "Songti SC",serif'; ctx.textAlign='center';
+      ctx.fillStyle='#f0d16a'; ctx.strokeStyle='rgba(60,20,10,.9)'; ctx.lineWidth=3;
+      ctx.strokeText(f.txt, px, py); ctx.fillText(f.txt, px, py);
+      // 放射
+      ctx.strokeStyle=`rgba(240,209,106,${(1-p)*.8})`; ctx.lineWidth=2;
+      for(let i=0;i<8;i++){
+        const a=i*Math.PI/4 + age*1.2;
+        const r1=10+age*26, r2=r1+8;
+        ctx.beginPath();
+        ctx.moveTo(px+Math.cos(a)*r1, py+Math.sin(a)*r1);
+        ctx.lineTo(px+Math.cos(a)*r2, py+Math.sin(a)*r2);
+        ctx.stroke();
+      }
+    } else {
+      ctx.font='bold 16px "Songti SC",serif'; ctx.textAlign='center';
+      ctx.fillStyle= f.kind==='heal'? '#8fd07a' : (f.kind==='miss'? '#9aa0a8' : '#e8d5a3');
+      ctx.strokeStyle='rgba(30,16,10,.85)'; ctx.lineWidth=2.6;
+      ctx.strokeText(f.txt, px, py); ctx.fillText(f.txt, px, py);
+    }
+    ctx.restore();
+  });
+  if(G.toast){
+    const age=t-G.toast.t0, dur=(G.toast.big?2.2:1.6)/(SET.speed||1);
+    if(age>dur){ G.toast=null; }
+    else {
+      const a = age<0.25? age/0.25 : (age>dur-0.4? (dur-age)/0.4 : 1);
+      ctx.save(); ctx.globalAlpha=clamp(a,0,1);
+      const w=G.toast.big? 320:240, h=G.toast.big?44:30;
+      const cx=cv.width/2, cy=G.toast.big? 74 : 58;
+      ctx.fillStyle='rgba(18,14,10,.9)'; ctx.fillRect(cx-w/2, cy-h/2, w, h);
+      ctx.strokeStyle='rgba(200,150,62,.7)'; ctx.lineWidth=1;
+      ctx.strokeRect(cx-w/2+.5, cy-h/2+.5, w-1, h-1);
+      ctx.fillStyle= G.toast.big? '#e8c86a':'#d9cdb0';
+      ctx.font=(G.toast.big?'bold 18px':'14px')+' "Songti SC",serif'; ctx.textAlign='center';
+      ctx.fillText(G.toast.txt, cx, cy+6);
+      ctx.restore();
+    }
+  }
+}
+
+/* 小地图：未探索不显示敌人 */
+function drawMini(){
+  const mw=GW*3.0, mh=GH*3.0;
+  const ox=cv.width-mw-12, oy=12;
+  ctx.save();
+  ctx.fillStyle='rgba(10,9,7,.94)'; ctx.fillRect(ox,oy,mw,mh);
+  ctx.strokeStyle='rgba(200,150,62,.55)'; ctx.lineWidth=1; ctx.strokeRect(ox+.5,oy+.5,mw-1,mh-1);
+  const cw=mw/GW, ch=mh/GH;
+  for(let y=0;y<GH;y++) for(let x=0;x<GW;x++){
+    if(!G.explored[y][x]) continue;
+    const t=G.tiles[y][x];
+    let col=null;
+    if(t===1) col='#6a5f4a';
+    else if(t===2) col='#1f4050';
+    else if(t===3) col='#33401f';
+    else if(t===5) col='#6f9e6a';
+    else if(t===T_HIGH) col='#3f4030';
+    else if(t===T_ROCK) col='#3a352c';
+    else if(t===T_SHALLOW) col='#254450';
+    else if(t===T_TRAP) col='#3a2418';
+    else if(t===T_BOAT) col='#4a3a22';
+    else if(t===T_DOOR) col='#5a4a32';
+    else if(t===T_BARREL) col='#4a3a20';
+    else col='#3a3324';
+    ctx.fillStyle=col;
+    ctx.fillRect(ox+x*cw, oy+y*ch, Math.ceil(cw), Math.ceil(ch));
+  }
+  // 目标
+  if(G.obj){
+    if(G.obj.type==='escort'){
+      if(G.obj.x!==undefined && G.explored[G.obj.y] && G.explored[G.obj.y][G.obj.x]){
+        ctx.fillStyle='#e8c86a'; ctx.fillRect(ox+G.obj.x*cw-1, oy+G.obj.y*ch-1, 4,4);
+      }
+    }
+    G.props.forEach(p=>{
+      if(G.explored[p.y] && G.explored[p.y][p.x]){
+        ctx.fillStyle= p.burning? '#e8842c':'#c8a060';
+        ctx.fillRect(ox+p.x*cw-1, oy+p.y*ch-1, 3.4,3.4);
+      }
+    });
+  }
+  // 出口
+  if(G.exit && G.explored[G.exit.y] && G.explored[G.exit.y][G.exit.x]){
+    ctx.fillStyle='#79b06a'; ctx.fillRect(ox+G.exit.x*cw-1.5, oy+G.exit.y*ch-1.5, 5,5);
+    ctx.strokeStyle='rgba(120,200,120,.7)'; ctx.strokeRect(ox+G.exit.x*cw-1.5, oy+G.exit.y*ch-1.5, 5,5);
+  }
+  // 已见敌人/友军（只画 visible）
+  G.mobs.forEach(m=>{
+    if(m.dead) return;
+    if(!(G.visible[m.y] && G.visible[m.y][m.x])) return;
+    ctx.fillStyle = RELCOL[m.rel] || '#b8563a';
+    const r = m.boss? 3.4 : 2.2;
+    ctx.beginPath(); ctx.arc(ox+m.x*cw+cw/2, oy+m.y*ch+ch/2, r, 0,7); ctx.fill();
+  });
+  // 玩家
+  ctx.fillStyle='#ffffff';
+  ctx.beginPath(); ctx.arc(ox+G.px*cw+cw/2, oy+G.py*ch+ch/2, 2.8, 0,7); ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(ox+G.px*cw+cw/2, oy+G.py*ch+ch/2, 5.4, 0,7); ctx.stroke();
+  ctx.fillStyle='rgba(200,150,62,.6)'; ctx.font='9px serif'; ctx.textAlign='left';
+  ctx.fillText('图', ox+3, oy+mh-4);
+  ctx.restore();
+}
+
+
+/* 靠墙的环境道具：只画不改逻辑 */
+function drawDeco(x,y,t){
+  if(t!==0) return;
+  const th=themeOf(), px=X(x), py=Y(y), h=hash2(x,y,55);
+  if(h<0.72) return;
+  const nearWall = (y>0 && G.tiles[y-1][x]===1) || (y<GH-1 && G.tiles[y+1][x]===1)
+                || (x>0 && G.tiles[y][x-1]===1) || (x<GW-1 && G.tiles[y][x+1]===1);
+  if(!nearWall) return;
+  if(th==='camp'){
+    if(h>0.92){
+      ctx.strokeStyle='#7a6140'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(px+12,py+TS-4); ctx.lineTo(px+12,py+4); ctx.stroke();
+      ctx.fillStyle='#8a2a22';
+      ctx.beginPath(); ctx.moveTo(px+13,py+5); ctx.lineTo(px+24,py+9); ctx.lineTo(px+13,py+14); ctx.fill();
+    } else {
+      ctx.strokeStyle='#8a7444'; ctx.lineWidth=1.6;
+      ctx.beginPath(); ctx.moveTo(px+9,py+TS-5); ctx.lineTo(px+16,py+8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px+20,py+TS-5); ctx.lineTo(px+14,py+8); ctx.stroke();
+      ctx.fillStyle='#9a9484'; ctx.fillRect(px+13,py+5,3,4);
+    }
+  } else if(th==='town'){
+    if(h>0.88){
+      ctx.fillStyle='#4a4236'; ctx.beginPath(); ctx.ellipse(px+TS/2,py+TS/2+3,6,4.5,0,0,7); ctx.fill();
+      ctx.fillStyle='#2a251c'; ctx.beginPath(); ctx.ellipse(px+TS/2,py+TS/2+2,4.6,3.4,0,0,7); ctx.fill();
+    } else {
+      ctx.fillStyle='#6a5a3c'; ctx.beginPath(); ctx.arc(px+TS/2,py+TS/2+2,5.4,0,7); ctx.fill();
+      ctx.strokeStyle='#8a7448'; ctx.lineWidth=1.2; ctx.stroke();
+    }
+  } else if(th==='palace'){
+    ctx.strokeStyle='#8a7040'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(px+13,py+TS-4); ctx.lineTo(px+13,py+10); ctx.stroke();
+    drawFire(px+13, py+7, 2.4, nowT()+x*0.7);
+  } else if(th==='granary'){
+    ctx.fillStyle='#7a6634'; ctx.beginPath();
+    ctx.moveTo(px+11,py+TS-5); ctx.lineTo(px+TS/2,py+9); ctx.lineTo(px+TS-11,py+TS-5); ctx.fill();
+  } else if(th==='mountain'){
+    ctx.fillStyle='#4a453a';
+    ctx.beginPath(); ctx.arc(px+13,py+TS-8,3.4,0,7); ctx.fill();
+    ctx.beginPath(); ctx.arc(px+19,py+TS-6,2.4,0,7); ctx.fill();
+  } else if(th==='ford'){
+    ctx.strokeStyle='rgba(150,170,110,.5)'; ctx.lineWidth=1.2;
+    for(let i=0;i<4;i++){
+      ctx.beginPath();
+      ctx.moveTo(px+8+i*6, py+TS-4);
+      ctx.lineTo(px+7+i*6+Math.sin(nowT()+i)*2, py+10);
+      ctx.stroke();
+    }
+  }
+}
+
+function renderCanvas(){
+  if(!G){ ctx.fillStyle='#0d0b08'; ctx.fillRect(0,0,cv.width,cv.height); return; }
+  camX = clamp(G.px-Math.floor(VW/2), 0, GW-VW);
+  camY = clamp(G.py-Math.floor(VH/2), 0, GH-VH);
+  ctx.fillStyle='#0b0a07'; ctx.fillRect(0,0,cv.width,cv.height);
+
+  const tms=nowT();
+  // 屏幕震动
+  if(G.shake && tms-G.shake < 0.22){
+    const m=(0.22-(tms-G.shake))*22;
+    ctx.save(); ctx.translate((Math.random()-.5)*m, (Math.random()-.5)*m);
+  }
+
+  const x0=Math.max(0,camX), x1=Math.min(GW,camX+VW+1);
+  const y0=Math.max(0,camY), y1=Math.min(GH,camY+VH+1);
+
+  // 未探之地：暗雾
+  for(let y=y0;y<y1;y++){
+    for(let x=x0;x<x1;x++){
+      if(G.explored[y][x]) continue;
+      const r=hash2(x,y,99);
+      ctx.fillStyle=`rgba(46,40,29,${0.42+r*0.26})`;
+      ctx.fillRect(X(x),Y(y),TS,TS);
+    }
+  }
+
+  for(let y=y0;y<y1;y++){
+    for(let x=x0;x<x1;x++){
+      const vis=G.visible[y][x], exp=G.explored[y][x];
+      if(!vis && !exp) continue;
+      const t=G.tiles[y][x];
+      if(t===1){ drawWall(x,y,vis); continue; }
+      if(t===2){ drawWater(X(x),Y(y),x,y,tms,false); if(!vis){ ctx.fillStyle='rgba(6,6,8,.4)'; ctx.fillRect(X(x),Y(y),TS,TS);} continue; }
+      if(t===T_SHALLOW){ drawWater(X(x),Y(y),x,y,tms,true); if(!vis){ ctx.fillStyle='rgba(6,6,8,.4)'; ctx.fillRect(X(x),Y(y),TS,TS);} continue; }
+      drawGround(x,y,t,vis);
+      if(vis) drawDeco(x,y,t);
+      const px=X(x), py=Y(y);
+      if(vis && t===T_TRAP){
+        ctx.strokeStyle='rgba(138,74,42,.85)'; ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.moveTo(px+9,py+9); ctx.lineTo(px+TS-9,py+TS-9);
+        ctx.moveTo(px+TS-9,py+9); ctx.lineTo(px+9,py+TS-9); ctx.stroke();
+      }
+      if(vis && t===T_BOAT){
+        ctx.fillStyle='#4a3520'; ctx.fillRect(px+5,py+10,TS-10,TS-20);
+        ctx.strokeStyle='#8a6a3e'; ctx.lineWidth=2; ctx.strokeRect(px+5.5,py+10.5,TS-11,TS-21);
+        ctx.strokeStyle='#6a5330'; ctx.beginPath();
+        ctx.moveTo(px+TS/2,py+8); ctx.lineTo(px+TS/2,py+TS-8); ctx.stroke();
+      }
+      if(vis && t===T_DOOR){
+        ctx.fillStyle='#5a4526'; ctx.fillRect(px+4,py+2,TS-8,TS-4);
+        ctx.strokeStyle='#8a6a3e'; ctx.lineWidth=2; ctx.strokeRect(px+4.5,py+2.5,TS-9,TS-5);
+        ctx.fillStyle='#c8963e'; ctx.beginPath(); ctx.arc(px+TS-9,py+TS/2,1.8,0,7); ctx.fill();
+      }
+      if(vis && t===T_BARREL){
+        ctx.fillStyle='#4a3a22'; ctx.beginPath(); ctx.ellipse(px+TS/2,py+TS/2,TS/2-7,TS/2-5,0,0,7); ctx.fill();
+        ctx.strokeStyle='#8a7040'; ctx.lineWidth=1.6;
+        ctx.beginPath(); ctx.ellipse(px+TS/2,py+TS/2,TS/2-7,TS/2-5,0,0,7); ctx.stroke();
+        ctx.strokeStyle='rgba(200,160,90,.35)';
+        ctx.beginPath(); ctx.ellipse(px+TS/2,py+TS/2-2,TS/2-8,TS/2-7,0,0,7); ctx.stroke();
+      }
+      if(vis && t===T_ROCK){
+        ctx.fillStyle='#3a352c';
+        ctx.beginPath(); ctx.moveTo(px+4,py+TS-4); ctx.lineTo(px+TS*.4,py+5);
+        ctx.lineTo(px+TS-5,py+TS-4); ctx.fill();
+        ctx.fillStyle='rgba(150,140,120,.14)';
+        ctx.beginPath(); ctx.moveTo(px+7,py+TS-7); ctx.lineTo(px+TS*.4,py+9); ctx.lineTo(px+TS*.46,py+TS-7); ctx.fill();
+      }
+      if(vis && t===T_HIGH){
+        ctx.strokeStyle='rgba(200,180,130,.28)'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(px+5,py+TS-5); ctx.lineTo(px+TS/2,py+5); ctx.lineTo(px+TS-5,py+TS-5); ctx.stroke();
+        ctx.fillStyle='rgba(200,180,130,.07)'; ctx.fillRect(px+3,py+3,TS-6,TS-6);
+      }
+      if(vis && t===T_BRAZI){
+        ctx.fillStyle='#33240f'; ctx.beginPath(); ctx.arc(px+TS/2,py+TS-6,6,0,7); ctx.fill();
+        drawFire(px+TS/2, py+TS-8, 3.6, tms+x*0.4+y*0.3);
+      }
+      if(t===5){
+        ctx.fillStyle='rgba(60,110,60,.14)'; ctx.fillRect(px+2,py+2,TS-4,TS-4);
+        ctx.strokeStyle='#79b06a'; ctx.lineWidth=2; ctx.strokeRect(px+2.5,py+2.5,TS-5,TS-5);
+        ctx.fillStyle='#9ad08a'; ctx.font='bold 16px serif'; ctx.textAlign='center';
+        ctx.fillText('出', px+TS/2, py+TS/2+6);
+      }
+    }
+  }
+
+  // 可燃物
+  G.props.forEach(p=>{
+    if(!(G.explored[p.y] && G.explored[p.y][p.x])) return;
+    const px=X(p.x), py=Y(p.y), vis=G.visible[p.y]&&G.visible[p.y][p.x];
+    if(!vis) ctx.globalAlpha=.55;
+    if(p.burning>=2){
+      ctx.fillStyle='#241a10'; ctx.fillRect(px+2,py+2,TS-4,TS-4);
+      ctx.fillStyle='rgba(120,110,100,.25)';
+      for(let i=0;i<3;i++) ctx.fillRect(px+5+i*8, py+5+i*6, 6,6);
+    } else if(p.burning===1){
+      ctx.fillStyle='#2a1d12'; ctx.fillRect(px+2,py+2,TS-4,TS-4);
+      drawFire(px+TS/2, py+TS/2, 6, nowT()+p.x);
+    } else {
+      ctx.fillStyle='#5a4a28'; ctx.fillRect(px+3,py+5,TS-6,TS-10);
+      ctx.strokeStyle='#8a7a4a'; ctx.lineWidth=1; ctx.strokeRect(px+3.5,py+5.5,TS-7,TS-11);
+      ctx.strokeStyle='rgba(30,24,14,.6)';
+      for(let i=1;i<3;i++){ ctx.beginPath(); ctx.moveTo(px+4,py+5+i*8); ctx.lineTo(px+TS-4,py+5+i*8); ctx.stroke(); }
+    }
+    ctx.globalAlpha=1;
+  });
+
+  // 道具 / 随行
+  G.items.forEach(it=>{
+    if(it.dead) return;
+    if(!(G.explored[it.y] && G.explored[it.y][it.x])) return;
+    const px=X(it.x), py=Y(it.y);
+    const vis=G.visible[it.y]&&G.visible[it.y][it.x];
+    if(!vis) ctx.globalAlpha=.6;
+    if(it.isEscort){
+      ctx.fillStyle='#6a5a3e';
+      drawFig(px+TS/2, py+TS/2, {s:1.02, cloth:'#6a5a3e', band:'#c8a060', wp:'none', armor:false, skin:'#d8b890'});
+      if(it.taken && typeof it.hp==='number'){
+        const w=TS*.78, h=3, bx=px+TS*.11, by=py+1;
+        ctx.fillStyle='#33261c'; ctx.fillRect(bx,by,w,h);
+        ctx.fillStyle='#7fae5a'; ctx.fillRect(bx,by,w*clamp(it.hp/Math.max(1,it.maxhp),0,1),h);
+      }
+    } else {
+      // 包裹/卷轴
+      ctx.fillStyle='rgba(216,192,112,.9)'; ctx.fillRect(px+10,py+13,TS-20,TS-22);
+      ctx.strokeStyle='#6a5330'; ctx.lineWidth=1.6; ctx.strokeRect(px+10.5,py+13.5,TS-21,TS-23);
+      ctx.strokeStyle='#a8823e'; ctx.beginPath();
+      ctx.moveTo(px+TS/2,py+13); ctx.lineTo(px+TS/2,py+TS-9); ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  });
+
+  // 烟雾：扩散 + 消散
+  if(G.smoke){
+    const sm=G.smoke;
+    const age=3-sm.t;
+    for(let dy=-3;dy<=3;dy++) for(let dx=-3;dx<=3;dx++){
+      const x=sm.x+dx, y=sm.y+dy;
+      if(x<0||y<0||x>=GW||y>=GH) continue;
+      const d=dist(x,y,sm.x,sm.y);
+      if(d>(sm.r||2)+0.6) continue;
+      const a=clamp(0.42 - age*0.09 - d*0.045, 0.04, 0.45);
+      const spread = age*3.4;
+      ctx.fillStyle=`rgba(150,144,128,${a})`;
+      ctx.beginPath();
+      ctx.arc(X(x)+TS/2, Y(y)+TS/2, TS*0.5 + spread + Math.sin(nowT()*2+x+y)*1.4, 0,7);
+      ctx.fill();
+    }
+  }
+
+  // 敌人
+  G.mobs.forEach(m=>{
+    if(m.dead) return;
+    if(!(G.explored[m.y] && G.explored[m.y][m.x])) return;
+    const vis=G.visible[m.y]&&G.visible[m.y][m.x];
+    drawMobUnit(m);
+    if(m.isTarget && vis){
+      ctx.strokeStyle='rgba(200,150,62,.8)'; ctx.lineWidth=1.6;
+      ctx.strokeRect(X(m.x)+1.5,Y(m.y)+1.5,TS-3,TS-3);
+    }
+  });
+
+  // 玩家柔光
+  const lx=X(G.px)+TS/2, ly=Y(G.py)+TS/2;
+  const lg=ctx.createRadialGradient(lx,ly,TS*0.4,lx,ly,TS*3.2);
+  lg.addColorStop(0,'rgba(255,226,170,.10)');
+  lg.addColorStop(1,'rgba(255,226,170,0)');
+  ctx.fillStyle=lg; ctx.beginPath(); ctx.arc(lx,ly,TS*3.2,0,7); ctx.fill();
+
+  // 玩家
+  drawPlayerUnit();
+
+  // 悬停
+  if(UI.hover && !UI.pending){
+    ctx.strokeStyle='rgba(200,150,62,.55)'; ctx.lineWidth=1.5;
+    ctx.strokeRect(X(UI.hover.x)+1,Y(UI.hover.y)+1,TS-2,TS-2);
+  }
+
+  // 可释放范围
+  if(UI.mode==='aim'){
+    const pulse=.5+Math.sin(nowT()*4)*.18;
+    aimCells().forEach(c=>{
+      const x=X(c.x), y=Y(c.y);
+      const mm=mobAt(c.x,c.y);
+      const ally=mm && mm.rel==='ally';
+      ctx.fillStyle = ally? `rgba(201,163,68,${0.13*pulse+0.06})` : `rgba(140,200,120,${0.12*pulse+0.05})`;
+      ctx.fillRect(x,y,TS,TS);
+      ctx.strokeStyle= ally? 'rgba(201,163,68,.55)' : 'rgba(140,200,120,.36)';
+      ctx.lineWidth=1; ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+    });
+  }
+
+  // 瞄准光标
+  if(UI.cursor){
+    const cxp=X(UI.cursor.x)+1, cyp=Y(UI.cursor.y)+1;
+    ctx.strokeStyle = UI.aimOk? 'rgba(150,210,130,.95)' : 'rgba(208,90,58,.9)';
+    ctx.lineWidth=2; ctx.strokeRect(cxp,cyp,TS-2,TS-2);
+    ctx.beginPath();
+    ctx.moveTo(cxp+TS/2,cyp); ctx.lineTo(cxp+TS/2,cyp+TS);
+    ctx.moveTo(cxp,cyp+TS/2); ctx.lineTo(cxp+TS,cyp+TS/2);
+    ctx.stroke();
+    ctx.strokeStyle='rgba(200,150,62,.25)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(X(G.px)+TS/2,Y(G.py)+TS/2); ctx.lineTo(cxp+TS/2,cyp+TS/2); ctx.stroke();
+  }
+
+  // 震动恢复
+  if(G.shake && tms-G.shake < 0.22) ctx.restore();
+
+  drawFx();
+
+  // 视野暗角
+  const cx0=X(G.px)+TS/2, cy0=Y(G.py)+TS/2;
+  const vg=ctx.createRadialGradient(cx0,cy0,TS*3,cx0,cy0,Math.max(cv.width,cv.height)*0.62);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.42)');
+  ctx.fillStyle=vg; ctx.fillRect(0,0,cv.width,cv.height);
+
+  drawMini();
+}
+
+/* 动画循环：只在非暂停时重绘战场 */
+function startLoop(){
+  if(typeof requestAnimationFrame!=='function') return;
+  const step=()=>{
+    requestAnimationFrame(step);
+    if(!G || UI.paused) return;
+    renderCanvas();
+  };
+  requestAnimationFrame(step);
+}
+
+function shade(hex){
+  // 简单压暗
+  const n = parseInt(hex.slice(1),16);
+  const r=Math.round(((n>>16)&255)*0.32), g=Math.round(((n>>8)&255)*0.32), b=Math.round((n&255)*0.32);
+  return `rgb(${r},${g},${b})`;
+}
+
+/* ===== 交互 ===== */
+function cellFromEvent(e){
+  const rect = cv.getBoundingClientRect();
+  const sx = cv.width/rect.width, sy = cv.height/rect.height;
+  const x = Math.floor(((e.clientX-rect.left)*sx)/TS) + camX;
+  const y = Math.floor(((e.clientY-rect.top)*sy)/TS) + camY;
+  return {x,y};
+}
+function inMap(x,y){ return x>=0 && y>=0 && x<GW && y<GH; }
+
+/* ---- 瞄准：目标选框 ---- */
+function canAimAt(x,y){
+  if(!G || !run || !inMap(x,y)) return false;
+  const p = UI.pending;
+  if(p === 'attack'){
+    const m = mobAt(x,y);
+    if(!m) return false;
+    if(m.rel === 'ally') return false;                 // 快捷攻击永远不打自己人
+    if(dist(G.px,G.py,x,y) > atkRange()) return false;
+    if(run.cls==='bow' && !lineOfSight(G.px,G.py,x,y,G.tiles)) return false;
+    return true;
+  }
+  const sk = SKILLS[p];
+  if(!sk) return false;
+  if(sk.target === 'self') return x===G.px && y===G.py;
+  if(dist(G.px,G.py,x,y) > (sk.range||1)) return false;
+  if(sk.target === 'enemy') return !!mobAt(x,y);       // 技能可以指向友军，但要二次确认
+  if(sk.target === 'tile')  return tileAt(x,y) !== 1;
+  return true;
+}
+
+/* 这一手能落在哪些格子上 —— 用来高亮范围，也用来限制选框 */
+function aimCells(){
+  if(!G || !run) return [];
+  const p = UI.pending;
+  const r = p==='attack' ? atkRange() : Math.max(1, (SKILLS[p] && SKILLS[p].range) || 1);
+  const out = [];
+  for(let y=Math.max(0,G.py-r); y<=Math.min(GH-1,G.py+r); y++)
+    for(let x=Math.max(0,G.px-r); x<=Math.min(GW-1,G.px+r); x++)
+      if(canAimAt(x,y)) out.push({x,y});
+  return out;
+}
+
+function beginAim(p){
+  if(!G || G.over || !run) return;
+  if(p !== 'attack'){
+    const sk = SKILLS[p];
+    if(!sk || !run.skills.includes(p) || run.lv < sk.lv) return;
+  }
+  UI.mode = 'aim';
+  UI.pending = p;
+  const cells = aimCells();
+  if(!cells.length){
+    UI.mode='move'; UI.pending=null; UI.cursor=null;
+    const msg = p==='attack' ? '手边没有可砍的人。' : '这一手此刻没有落点。';
+    addLog(msg,'r');
+    const h = document.getElementById('hint');
+    if(h) h.textContent = msg;
+    updateSkills();
+    return;
+  }
+  let best = cells[0], bd = 1e9;
+  cells.forEach(c=>{ const d = dist(G.px,G.py,c.x,c.y); if(d < bd){ bd=d; best=c; } });
+  UI.cursor = {x:best.x, y:best.y};
+  refreshAim();
+}
+
+function clearAim(){
+  UI.mode='move'; UI.pending=null; UI.cursor=null; UI.aimOk=false;
+  document.getElementById('hint').textContent='';
+  updateSkills(); renderCanvas();
+}
+
+function refreshAim(){
+  if(UI.mode!=='aim') return;
+  UI.aimOk = canAimAt(UI.cursor.x, UI.cursor.y);
+  const p = UI.pending;
+  const nm = p==='attack' ? '普通攻击' : (SKILLS[p] ? SKILLS[p].name : '');
+  const hint = document.getElementById('hint');
+  const tgt = mobAt(UI.cursor.x, UI.cursor.y);
+  hint.textContent = `${nm}　范围 ${aimCells().length} 格　方向键 / 鼠标移框　左键或 Enter 确认　ESC 取消`
+    + (tgt && tgt.rel==='ally' ? '　（友军：需二次确认）' : '');
+  updateSkills();
+  renderCanvas();
+}
+
+function moveCursor(dx,dy){
+  if(UI.mode!=='aim') return;
+  const nx = clamp(UI.cursor.x+dx, Math.max(0,camX), Math.min(GW-1, camX+VW-1));
+  const ny = clamp(UI.cursor.y+dy, Math.max(0,camY), Math.min(GH-1, camY+VH-1));
+  if(!canAimAt(nx,ny)) return;          // 选框不许出范围
+  UI.cursor = {x:nx, y:ny};
+  refreshAim();
+}
+
+function confirmAim(){
+  if(UI.mode!=='aim') return;
+  const x = UI.cursor.x, y = UI.cursor.y;
+  if(!canAimAt(x,y)){ addLog('那里不在范围里。','r'); return; }
+  const tm = mobAt(x,y);
+  if(tm && tm.rel === 'ally' && UI.pending !== 'attack'){
+    showAllyConfirm(tm, ()=>executePending(x,y));
+    return;
+  }
+  executePending(x,y);
+}
+
+function executePending(x,y){
+  const p = UI.pending;
+  if(p === 'attack'){
+    const m = mobAt(x,y);
+    UI.mode='move'; UI.pending=null; UI.cursor=null; UI.aimOk=false;
+    document.getElementById('hint').textContent='';
+    updateSkills();
+    basicAttack(m);
+    return;
+  }
+  const sk = SKILLS[p];
+  let tx=x, ty=y;
+  if(sk.target==='self'){ tx=G.px; ty=G.py; }
+  const ok = useSkill(p, tx, ty);
+  if(ok){
+    UI.mode='move'; UI.pending=null; UI.cursor=null; UI.aimOk=false;
+    document.getElementById('hint').textContent='';
+  }
+  updateSkills(); renderAll();
+}
+
+function showAllyConfirm(m, onYes){
+  UI.paused = true;
+  hideTip();
+  ov(`<div class="tag">同室操戈</div>
+    <h2>${m.name}</h2>
+    <p class="lead">他是自己人。<br>这一下出手，他就再不是了。</p>
+    <div style="margin-top:26px">
+      <button class="btn" id="cf-yes">动手</button>
+      <button class="btn" id="cf-no" style="margin-top:10px;background:#221a12;border-color:#4a3c2a">算了</button>
+    </div>`);
+  const yes = document.getElementById('cf-yes');
+  const no  = document.getElementById('cf-no');
+  if(yes) yes.onclick = ()=>{
+    UI.paused=false; hideOv();
+    m.rel = 'hostile';
+    addLog(m.name+' 由友转敌，眼中已无旧情。','r');
+    onYes();
+  };
+  if(no) no.onclick = ()=>{ UI.paused=false; hideOv(); renderAll(); };
+}
+
+/* ---- 鼠标 ---- */
+cv.addEventListener('mousemove', e=>{
+  if(!G || G.over || !run || UI.paused) return;
+  const c = cellFromEvent(e);
+  if(!inMap(c.x,c.y)){ UI.hover=null; hideTip(); return; }
+  UI.hover = c;
+  if(UI.mode==='aim'){
+    if(canAimAt(c.x,c.y)) UI.cursor = {x:c.x,y:c.y};
+    UI.aimOk = canAimAt(UI.cursor.x,UI.cursor.y);
+    renderCanvas();
+  }
+  showTip(e,c);
+});
+cv.addEventListener('mouseleave', ()=>{ UI.hover=null; hideTip(); });
+
+cv.addEventListener('click', e=>{
+  if(!G || G.over || !run || UI.paused) return;
+  const c = cellFromEvent(e);
+  if(!inMap(c.x,c.y)) return;
+
+  if(UI.mode==='aim'){
+    if(!canAimAt(c.x,c.y)){ addLog('那里不在范围里。','r'); return; }
+    UI.cursor = {x:c.x,y:c.y};
+    UI.aimOk = true;
+    confirmAim();
+    return;
+  }
+  if(c.x===G.px && c.y===G.py){ addLog('你按住不动。',''); endTurn(); return; }
+
+  const dx = c.x-G.px, dy = c.y-G.py;
+  const adj = Math.max(Math.abs(dx),Math.abs(dy))===1;
+
+  if(adj){
+    const m = mobAt(c.x,c.y);
+    if(m){
+      if(m.rel==='ally'){ addLog('那是自己人。右键看看，别乱砍。','r'); return; }
+      basicAttack(m); return;
+    }
+    movePlayer(dx,dy);
+    return;
+  }
+  const m = mobAt(c.x,c.y);
+  if(m && dist(G.px,G.py,c.x,c.y) <= atkRange()){ basicAttack(m); return; }
+  addLog('够不着。按 F 开瞄准，或先走近。','r');
+});
+
+cv.addEventListener('contextmenu', e=>{
+  e.preventDefault();
+  if(!G || G.over || !run) return;
+  const c = cellFromEvent(e);
+  if(!inMap(c.x,c.y)) return;
+  const m = mobAt(c.x,c.y);
+  if(m && G.visible[m.y] && G.visible[m.y][m.x]) showMobSheet(m);
+  else if(c.x===G.px && c.y===G.py) showPanel('char');
+});
+
+/* ---- 键盘 ---- */
+const MVKEYS = {w:[0,-1], s:[0,1], a:[-1,0], d:[1,0], q:[-1,-1], e:[1,-1], z:[-1,1], c:[1,1]};
+
+document.addEventListener('keydown', e=>{
+  const k = e.key.toLowerCase();
+
+  if(UI.paused){
+    if(k==='escape' || k==='tab'){ e.preventDefault(); closePanel(); return; }
+    if(k==='i'||k==='b'||k==='k'||k==='j'){
+      showPanel(k==='i'?'char':k==='b'?'bag':k==='k'?'skills':'quest');
+      return;
+    }
+    return;
+  }
+  if(!G || G.over || !run) return;
+
+  if(k==='tab'){ e.preventDefault(); showPanel('char'); return; }
+  if(k==='i'){ showPanel('char'); return; }
+  if(k==='b'){ showPanel('bag'); return; }
+  if(k==='k'){ showPanel('skills'); return; }
+  if(k==='j'){ showPanel('quest'); return; }
+
+  if(UI.mode==='aim'){
+    if(k==='escape'){ e.preventDefault(); clearAim(); return; }
+    if(k==='enter' || k===' '){ e.preventDefault(); confirmAim(); return; }
+    const ad = MVKEYS[k];
+    if(ad){ e.preventDefault(); moveCursor(ad[0],ad[1]); return; }
+    if(k==='arrowup'){ e.preventDefault(); moveCursor(0,-1); return; }
+    if(k==='arrowdown'){ e.preventDefault(); moveCursor(0,1); return; }
+    if(k==='arrowleft'){ e.preventDefault(); moveCursor(-1,0); return; }
+    if(k==='arrowright'){ e.preventDefault(); moveCursor(1,0); return; }
+    if(k>='1' && k<='6'){
+      const id = run.skills[parseInt(k)-1];
+      if(!id) return;
+      if(run.lv < SKILLS[id].lv){ addLog('这一手还没练成。','r'); return; }
+      beginAim(id);
+      return;
+    }
+    return;
+  }
+
+  if(k==='escape'){ e.preventDefault(); UI.paused=true; showSettings(true); return; }
+  if(k==='m'){ SET.mute=!SET.mute; saveSet(); addLog(SET.mute?'静了。':'有声了。',''); return; }
+
+  const mv = MVKEYS[k];
+  if(mv){
+    e.preventDefault();
+    const tx = G.px+mv[0], ty = G.py+mv[1];
+    const m = mobAt(tx,ty);
+    if(m){
+      if(m.rel==='ally'){ addLog('挡在前面的，是自己人。','r'); return; }
+      basicAttack(m); return;
+    }
+    movePlayer(mv[0],mv[1]);
+    return;
+  }
+  if(k==='arrowup'){ e.preventDefault(); movePlayer(0,-1); return; }
+  if(k==='arrowdown'){ e.preventDefault(); movePlayer(0,1); return; }
+  if(k==='arrowleft'){ e.preventDefault(); movePlayer(-1,0); return; }
+  if(k==='arrowright'){ e.preventDefault(); movePlayer(1,0); return; }
+
+  if(k==='f'){ beginAim('attack'); return; }
+  if(k==='g'){ tryEscape(); return; }
+  if(k==='r'){
+    run.st = clamp(run.st+8,0,run.stmax);
+    G.alarm = clamp(G.alarm+2,0,4);
+    addLog('你喘了口气。','y');
+    endTurn();
+    return;
+  }
+  if(k===' ' || k==='x'){ e.preventDefault(); endTurn(); return; }
+  if(k>='1' && k<='6'){
+    const id = run.skills[parseInt(k)-1];
+    if(id) beginAim(id);
+  }
+});
+
+/* ===== 覆层页面 ===== */
+const OV = document.getElementById('overlay');
+
+/* ===== 悬浮信息 ===== */
+const TIP = document.getElementById('tip');
+function hideTip(){ TIP.style.display='none'; }
+function showTip(evt, c){
+  if(UI.mode==='aim'){ hideTip(); return; }
+  const m = mobAt(c.x,c.y);
+  if(!m || !G.visible[c.y] || !G.visible[c.y][c.x]){ hideTip(); return; }
+  const pct = Math.max(0, m.hp/m.max)*100;
+  TIP.innerHTML = `
+    <div class="tn">${m.name}　<span style="color:#8d8069;font-size:11px">Lv.${m.lv}</span></div>
+    <div class="tr">${m.kind}</div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <div style="color:#c8b898">气血 ${Math.max(0,m.hp)} / ${m.max}</div>
+    <div style="color:#c8b898">斗气 ${m.qi||0} / ${m.maxQi||0}</div>
+    <div style="color:#7a6f5c;font-size:11px;margin-top:3px">右键看详情</div>`;
+  TIP.style.display='block';
+  const r = TIP.getBoundingClientRect();
+  let x = evt.clientX + 18, y = evt.clientY + 16;
+  if(x + r.width > window.innerWidth - 8) x = evt.clientX - r.width - 14;
+  if(y + r.height > window.innerHeight - 8) y = window.innerHeight - r.height - 10;
+  TIP.style.left = Math.max(6,x)+'px';
+  TIP.style.top = Math.max(6,y)+'px';
+}
+
+/* ===== 面板 ===== */
+function closePanel(){
+  UI.paused = false; UI.panel = null;
+  hideOv(); hideTip();
+  if(G && !G.over) renderAll();
+}
+
+function showMobSheet(m){
+  UI.paused = true; UI.panel = 'mob';
+  const aiName = ({chase:'追击', ranged:'远程', guard:'守位', objective:'纵火'})[m.ai] || m.ai;
+  const res = m.res ? `火 ${m.res.fire}　刃 ${m.res.blade}　刺 ${m.res.pierce}` : '—';
+  ov(`
+    <div class="tag">敌情 · 详细</div>
+    <h2>${m.name}</h2>
+    <p class="lead" style="margin-bottom:18px">${m.kind}　Lv.${m.lv}　${aiName}　${m.isTarget?'<span style="color:#c8963e">此行目标</span>':''}</p>
+    <div class="row"><span>气血</span><b>${Math.max(0,m.hp)} / ${m.max}</b></div>
+    <div class="row"><span>斗气</span><b>${m.qi||0} / ${m.maxQi||0}</b></div>
+    <div class="row"><span>攻击</span><b>${m.atk}</b></div>
+    <div class="row"><span>防御</span><b>${m.def}</b></div>
+    <div class="row"><span>移动力</span><b>${m.spd||1} 格 / 回合</b></div>
+    <div class="row"><span>命中</span><b>${m.acc||0}</b></div>
+    <div class="row"><span>闪避</span><b>${m.eva||0}</b></div>
+    <div class="row"><span>兵器</span><b>${m.weapon||'徒手'}</b></div>
+    <div class="row"><span>甲胄</span><b>${m.armor||'无'}</b></div>
+    <div class="row"><span>抗性</span><b>${res}</b></div>
+    <div class="row"><span>攻击距离</span><b>${m.range} 格</b></div>
+    ${m.bleed?`<div class="row"><span>伤势</span><b style="color:#b8563a">流血 ${m.bleed}，余 ${m.bleedT} 回合</b></div>`:''}
+    <div style="margin-top:24px"><button class="btn" id="btn-close">收起</button></div>
+  `);
+  const bc = document.getElementById('btn-close');
+  if(bc) bc.onclick = closePanel;
+}
+
+function showPanel(tab){
+  if(!run) return;
+  UI.paused = true; UI.panel = tab;
+  renderPanel(tab);
+}
+
+function renderPanel(tab){
+  UI.panel = tab;
+  const T = (id,label)=>`<div class="tab ${tab===id?'on':''}" data-tab="${id}">${label}</div>`;
+  const tabs = `<div class="tabs">${T('char','人物')}${T('bag','背包')}${T('skills','手段')}${T('quest','行止')}<div class="tab" data-tab="help">键位</div></div>`;
+  let body = '';
+
+  if(tab==='char'){
+    const w = asGear(run.equip.weapon), ar = asGear(run.equip.armor);
+    body = `
+      <h2>${run.name}</h2>
+      <p class="lead" style="margin-bottom:16px">Lv.${run.lv}　名望 ${run.fame}　杀敌 ${run.kills}</p>
+      <div class="row"><span>气血</span><b>${run.hp} / ${run.maxhp}</b></div>
+      <div class="row"><span>体力</span><b>${run.st} / ${run.stmax}</b></div>
+      <div class="row"><span>${run.resName}</span><b>${run.res} / ${run.resMax}</b></div>
+      <div class="row"><span>攻击</span><b>${pAtk()}${gearAtk()?`（器物 +${gearAtk()}）`:''}</b></div>
+      <div class="row"><span>防御</span><b>${pDef()}${gearDef()?`（器物 +${gearDef()}）`:''}</b></div>
+      <div class="row"><span>闪避</span><b>${pEva()}</b></div>
+      <div class="row"><span>目力</span><b>${run.sight} 格</b></div>
+      <div class="row"><span>经验</span><b>${run.exp||0} / ${expNeed(run.lv)}</b></div>
+      <div class="row"><span>技能点</span><b>${run.sp}</b></div>
+      <h3 style="margin:20px 0 8px">随身</h3>
+      <div class="itm"><div>兵器 · ${w?gearLabel(w):'徒手'}${w?`<br><span style="color:#a08a62;font-size:11.5px">${itemStat(w)||it_desc(ITEMS[iid(w)])}</span>`:''}</div>${w?'<span class="a" data-unequip="weapon">卸下</span>':''}</div>
+      <div class="itm"><div>甲胄 · ${ar?gearLabel(ar):'无'}${ar?`<br><span style="color:#a08a62;font-size:11.5px">${itemStat(ar)}</span>`:''}</div>${ar?'<span class="a" data-unequip="armor">卸下</span>':''}</div>
+    `;
+  } else if(tab==='bag'){
+    body = `<h2>行囊</h2><p class="lead" style="font-size:12px;color:#8d8069;margin-bottom:10px">${run.items.length} / ${MAXBAG}　满了就带不走新的</p>` + (run.items.length===0
+      ? `<p class="lead">囊中空空，只有一把刀。</p>`
+      : run.items.map((raw,i)=>{
+          const id = iid(raw);
+          const it = ITEMS[id];
+          if(!it) return '';
+          const st = itemStat(raw);
+          const isGear = (it.type==='weapon' || it.type==='armor');
+          const title = (typeof raw==='object') ? gearLabel(raw) : it.name;
+          const diff = isGear ? equipDiff(raw) : '';
+          return `<div class="itm"><div>${title}${st?`<br><span style="color:#a08a62;font-size:11.5px">${st}</span>`:''}<br><span style="color:#8d8069;font-size:11.5px">${it.d}</span>${diff?`<br><span style="color:#7fa86a;font-size:11.5px">相对随身：${diff}</span>`:''}</div>
+            <span class="a" data-item="${i}">${it.type==='use'?'用':'装'}</span></div>`;
+        }).join(''));
+  } else if(tab==='skills'){
+    const activeC = COMBOS.filter(c=>run.ch && run.ch[c.flag]);
+    body = `<h2>手段</h2>
+      <p class="lead" style="margin-bottom:12px">可投 ${run.sp} 点。每门两条路，选定不可反悔，每路最多两级。</p>` +
+      run.skills.map(id=>{
+        const sk = SKILLS[id];
+        const br = BRANCHES[id];
+        const m = (run.mastery && run.mastery[id]) || {p:null, l:0};
+        const row = p=>{
+          const lv = m.p===p ? m.l : 0;
+          const other = m.p && m.p!==p;
+          const maxed = lv>=2;
+          const can = !other && !maxed && run.sp>0;
+          return `<span class="a" ${can?`data-master="${id}|${p}"`:''} style="${other||maxed?'opacity:.38':''}">${p.toUpperCase()}·${br[p].n} ${lv}/2</span>`;
+        };
+        return `<div class="itm">
+          <div><b style="color:#c8b48a">${sk.name}</b>
+            <br><span style="font-size:11.5px;color:#8d8069">${br.a.d}<br>${br.b.d}</span></div>
+          <div style="display:flex;gap:10px">${row('a')}${row('b')}</div>
+        </div>`;
+      }).join('') +
+      (activeC.length ? `<h2 style="margin-top:18px">已成路子</h2>` + activeC.map(c=>
+        `<div class="itm"><div><b style="color:#c8963e">${c.n}</b><br><span style="font-size:11.5px;color:#a08a62">${c.d}</span></div></div>`).join('') : '');
+  } else if(tab==='quest'){
+    body = `<h2>行止</h2>
+      <p class="lead" style="margin-bottom:14px">兴平年间，天下事一件接一件。你只来得及做眼前这一件。</p>` +
+      EVENTS.map((ev,i)=>{
+        const st = i < W.evIdx ? '已历' : (i === W.evIdx ? '此刻' : '未至');
+        const col = i === W.evIdx ? '#c8963e' : '#6b6152';
+        return `<div class="row"><span style="color:${col}">${ev.y} 年 · ${ev.title}</span><b style="color:${col}">${st}</b></div>`;
+      }).join('') +
+      `<h3 style="margin:20px 0 8px">眼前</h3>
+       <div style="font-size:13px;color:#c8b898">${G&&G.obj?objText(G.obj):'无'}</div>`;
+  } else {
+    body = `<h2>键位</h2>
+      <div class="row"><span>移动（八方向）</span><b>W A S D / Q E Z C</b></div>
+      <div class="row"><span>普通攻击</span><b>F（开后瞄准）</b></div>
+      <div class="row"><span>快捷攻击</span><b>左键点敌人 / 向敌人走</b></div>
+      <div class="row"><span>技能</span><b>1 — 6</b></div>
+      <div class="row"><span>喘息</span><b>R</b></div>
+      <div class="row"><span>原地等待</span><b>空格</b></div>
+      <div class="row"><span>撤离</span><b>G（站在「出」格）</b></div>
+      <div class="row"><span>状态 / 背包</span><b>I / B</b></div>
+      <div class="row"><span>技能加点 / 行止</span><b>K / J</b></div>
+      <div class="row"><span>敌人详情</span><b>右键</b></div>
+      <div class="row"><span>关闭面板</span><b>ESC / TAB</b></div>
+    `;
+  }
+
+  ov(tabs + body + `<div style="margin-top:24px"><button class="btn" id="btn-close">收起</button></div>`);
+
+  const bc = document.getElementById('btn-close');
+  if(bc) bc.onclick = closePanel;
+  OV.querySelectorAll('.tab').forEach(t=>{ t.onclick = ()=>renderPanel(t.dataset.tab); });
+  OV.querySelectorAll('[data-unequip]').forEach(el=>{ el.onclick = ()=>{ unequip(el.dataset.unequip); renderPanel(UI.panel); }; });
+  OV.querySelectorAll('[data-item]').forEach(el=>{ el.onclick = ()=>{ useItem(parseInt(el.dataset.item)); renderPanel(UI.panel); }; });
+  OV.querySelectorAll('[data-master]').forEach(el=>{
+    el.onclick = ()=>{
+      const parts = el.dataset.master.split('|');
+      addMaster(parts[0], parts[1]);
+    };
+  });
+}
+
+function objText(o){
+  if(!o) return '无';
+  if(o.type==='burn')    return `烧掉 ${o.need} 处粮草（已烧 ${G.objDone||0}）`;
+  if(o.type==='protect') return `守住 ${o.need} 堆粮（尚存 ${G.props?G.props.filter(p=>p.kind==='grain'&&p.burning===0).length:0}）`;
+  if(o.type==='kill')    return `取 ${o.eliteName||'目标'} 的命`;
+  if(o.type==='steal')   return `取走 ${o.item||'东西'}`;
+  if(o.type==='escort')  return `把 ${o.who||'人'} 接出来`;
+  if(o.type==='clear')   return `清空此地（余 ${G.mobs?G.mobs.filter(m=>!m.dead && m.rel==='hostile').length:0}）`;
+  return '无';
+}
+
+function unequip(slot){
+  const id = run.equip[slot];
+  if(!id) return;
+  run.items.push(id);
+  if(run.items.length > MAXBAG){ addLog('背囊塞不下，先扔掉些东西。','r'); run.items.pop(); return; }
+  run.equip[slot] = null;
+  recalcGear();
+  addLog('收了 '+(ITEMS[iid(id)]||{}).name+'。','');
+  updateTopbar();
+  if(G && !G.over){
+    endTurn();
+    renderPanel('char');
+  }
+}
+
+function useItem(i){
+  const raw = run.items[i];
+  const id = iid(raw);
+  const it = ITEMS[id];
+  if(!it) return;
+
+  if(it.type === 'use'){
+    // 先看清有没有用，再决定扣不扣
+    if(it.heal && run.hp >= run.maxhp){ addLog('气血正足，这药留着。','r'); renderPanel('bag'); return; }
+    if(it.qi && run.res >= run.resMax){ addLog(run.resName+'已满，用不上。','r'); renderPanel('bag'); return; }
+    if(it.sta && run.st >= run.stmax){ addLog('体力还撑得住。','r'); renderPanel('bag'); return; }
+
+    if(id === 'oil'){
+      let n=0;
+      for(let y=G.py-2;y<=G.py+2;y++) for(let x=G.px-2;x<=G.px+2;x++){
+        const p = propAt(x,y);
+        if(p && p.kind==='grain' && p.burning<=0){ p.burning=1; n++; }
+      }
+      if(!n){ addLog('身边没有可烧的东西，油还留着。','r'); renderPanel('bag'); return; }
+      addLog(`火油泼开，${n} 堆粮着了。`,'y');
+      G.alarm = clamp(G.alarm+1,0,4);
+    } else {
+      if(it.heal) run.hp = clamp(run.hp+it.heal, 0, run.maxhp);
+      if(it.qi)   run.res = clamp(run.res+it.qi, 0, run.resMax);
+      if(it.sta)  run.st  = clamp(run.st+it.sta, 0, run.stmax);
+      addLog('用了 '+it.name+'。','g');
+    }
+    run.items.splice(i,1);
+  } else {
+    const slot = it.type;
+    const old = run.equip[slot];
+    run.equip[slot] = (it.type==='weapon'||it.type==='armor') ? (raw||id) : id;
+    run.items.splice(i,1);
+    if(old) run.items.push(old);
+    recalcGear();
+    addLog('换上 '+it.name+'。','g');
+  }
+
+  updateTopbar();
+  if(G && !G.over){
+    endTurn();                 // 吃药换甲都要一个回合
+    if(UI.paused) renderPanel(UI.panel || 'bag');
+  }
+}
+
+/* 这件换上去，比身上的强多少 */
+function equipDiff(inst){
+  if(!inst) return '';
+  const it = ITEMS[iid(inst)];
+  if(!it || it.type==='use') return '';
+  const cur = instStats(run.equip[it.type]);
+  const nw = instStats(inst);
+  if(!nw) return '';
+  const parts = [];
+  const keys = [['atk','攻'],['def','防'],['eva','闪'],['hp','血'],['range','程']];
+  keys.forEach(([k,label])=>{
+    const d = (nw[k]||0) - (cur ? (cur[k]||0) : 0);
+    if(d) parts.push(`${label}${d>0?'+':''}${d}`);
+  });
+  return parts.join(' ') || '持平';
+}
+
+/* ===== 战利品三选一 ===== */
+function rollReward(n){
+  const out = [];
+  const ids = ['dao','jian','armor2','changdao','med','pill','oil','food'];
+  for(let i=0;i<(n||3);i++){
+    const id = pick(ids);
+    const it = ITEMS[id];
+    if(it.type==='use') out.push({kind:'item', id});
+    else out.push({kind:'gear', g: gearFor(id, 3 + rand(4))});
+  }
+  return out;
+}
+
+function showReward(){
+  if(!run){ showCamp(); return; }
+  const picks = rollReward(3);
+  const cards = picks.map((p,i)=>{
+    const it = ITEMS[p.kind==='item'?p.id:iid(p.g)];
+    const nm = p.kind==='item' ? it.name : gearLabel(p.g);
+    const st = p.kind==='item' ? itemStat(it) : itemStat(p.g);
+    return `<div class="opt" data-pick="${i}">
+      <div class="t">${nm}</div>
+      <div class="d">${st||it.d}</div>
+      <div class="m">${p.kind==='item'?'补给':'器物'}</div>
+    </div>`;
+  }).join('');
+  ov(`<div class="tag">缴获</div><h2>从尸首与行囊里挑一件</h2>
+    <p class="lead" style="font-size:12.5px">只能拿一件。背囊 ${run.items.length}/${MAXBAG}。</p>
+    ${cards}
+    <div class="opt" data-pick="skip"><div class="t">什么都不要</div><div class="d">轻装上路。</div></div>
+  `);
+  [...document.querySelectorAll('[data-pick]')].forEach(el=>{
+    el.onclick = ()=>{
+      const k = el.dataset.pick;
+      if(k !== 'skip'){
+        const p = picks[parseInt(k)];
+        if(run.items.length >= MAXBAG) addLog('背囊满了，拿不了。','r');
+        else if(p.kind==='item') run.items.push(p.id);
+        else run.items.push(p.g);
+      }
+      hideOv();
+      showCamp();
+    };
+  });
+}
+
+/* ===== 营火：一局之间只能做一件事 ===== */
+function showCamp(){
+  if(!run){ showEvent(W.evIdx+1); return; }
+  const hpTxt = `${run.hp}/${run.maxhp}`;
+  const hasSp = run.sp>0;
+  ov(`<div class="tag">行营</div><h2>歇脚</h2>
+    <p class="lead" style="font-size:12.5px">气血 ${hpTxt}　体力 ${run.st}/${run.stmax}　技能点 ${run.sp}<br>只来得及做一件事。</p>
+    ${hasSp?`<p class="lead" style="font-size:12px;color:#c8963e">还有 ${run.sp} 点没花——进战场按 K 分配。</p>`:''}
+    <div class="opt" data-camp="rest"><div class="t">睡一觉</div><div class="d">回气血四成，体力回满，警觉不变。</div><div class="m">恢复</div></div>
+    <div class="opt" data-camp="heal"><div class="t">找人敷药</div><div class="d">回气血七成，但动静大了，警觉 +1。</div><div class="m">恢复</div></div>
+    <div class="opt" data-camp="supply"><div class="t">补给</div><div class="d">金疮药两份、干粮一份。</div><div class="m">行囊</div></div>
+    <div class="opt" data-camp="forge"><div class="t">磨刀</div><div class="d">给随身兵器添一条词缀，趁手些。</div><div class="m">器物</div></div>
+    <div class="opt" data-camp="none"><div class="t">不歇，连夜走</div><div class="d">什么都不换，警觉 -1。</div><div class="m">赶路</div></div>
+  `);
+  [...document.querySelectorAll('[data-camp]')].forEach(el=>{
+    el.onclick = ()=>{
+      const k = el.dataset.camp;
+      if(k==='rest'){
+        run.hp = clamp(run.hp + Math.round(run.maxhp*0.4), 0, run.maxhp);
+        run.st = run.stmax;
+      } else if(k==='heal'){
+        run.hp = clamp(run.hp + Math.round(run.maxhp*0.7), 0, run.maxhp);
+        W.alarm = clamp((W.alarm||0)+1, 0, 4);
+      } else if(k==='supply'){
+        ['med','med','food'].forEach(id=>{ if(run.items.length<MAXBAG) run.items.push(id); });
+      } else if(k==='forge'){
+        forgeWeapon();
+      } else if(k==='none'){
+        W.alarm = clamp((W.alarm||0)-1, 0, 4);
+      }
+      hideOv();
+      showEvent(W.evIdx+1);
+    };
+  });
+}
+
+function forgeWeapon(){
+  const w = asGear(run.equip.weapon);
+  if(!w){ addLog('赤手空拳，没得磨。','r'); return; }
+  const pool = AFFIX_WEAPON.filter(k=>!(w.af||[]).includes(k));
+  const rr = RARITY[w.r] || RARITY.common;
+  if(!pool.length || (w.af||[]).length >= rr.af){
+    addLog('这件器物已经吃满了词缀。','r');
+    return;
+  }
+  w.af.push(pick(pool));
+  recalcGear();
+  addLog('磨出一条「'+AFFIX[w.af[w.af.length-1]].n+'」。','g');
+}
+
+const BRANCHES = {
+  backstab:  {a:{n:'穿心', d:'暗处出手 3 倍，二级 3.4 倍'},        b:{n:'割喉', d:'命中后流血 10，二级 14'}},
+  hide:      {a:{n:'无声', d:'隐蔽时移动不解形'},                  b:{n:'影替', d:'挡下一次攻击，二级两次'}},
+  smoke:     {a:{n:'浓烟', d:'烟区扩到 2 格，二级 3 格'},          b:{n:'迷眼', d:'敌两回合命中 -20%'}},
+  artery:    {a:{n:'断脉', d:'流血 12，二级 16'},                  b:{n:'腐脉', d:'流血同时削防 3'}},
+  ignite:    {a:{n:'纵火', d:'点燃范围 1 格，二级 2 格'},          b:{n:'燎原', d:'额外再点 2 处'}},
+  vanish:    {a:{n:'绝踪', d:'敌人搜满 12 回合'},                  b:{n:'反杀', d:'下一击暴击 +25%'}},
+  lunge:     {a:{n:'透甲', d:'无视一半防御'},                      b:{n:'续势', d:'命中回 10 势'}},
+  brace:     {a:{n:'沉势', d:'+25 势'},                            b:{n:'转守', d:'蓄势并 +10% 暴击'}},
+  setSpear:  {a:{n:'铁壁', d:'减伤七成'},                          b:{n:'枪锋', d:'反击 1.3 倍'}},
+  pierceLine:{a:{n:'贯穿', d:'打到第 4 格'},                       b:{n:'破阵', d:'每中一人回 5 势'}},
+  holdGate:  {a:{n:'磐石', d:'+10 防御'},                          b:{n:'门神', d:'近身者被击退'}},
+  onestrike: {a:{n:'决死', d:'上限 6 倍'},                         b:{n:'余势', d:'击杀返还一半势'}},
+  draw:      {a:{n:'凝神', d:'+25 准'},                            b:{n:'定息', d:'下一箭暴击 +15%'}},
+  stepShot:  {a:{n:'游射', d:'退两格'},                            b:{n:'回马', d:'退步后一箭 +30%'}},
+  fireArrow: {a:{n:'燎原', d:'范围两格'},                          b:{n:'火油', d:'附带燃烧 6'}},
+  rapid:     {a:{n:'连珠', d:'三箭'},                              b:{n:'贯注', d:'第二箭满额'}},
+  oneArrow:  {a:{n:'贯云', d:'上限 6 倍'},                         b:{n:'余准', d:'击杀回 20 准'}},
+  whistle:   {a:{n:'惊营', d:'警觉 +4'},                           b:{n:'诱敌', d:'敌人停两回合'}}
+};
+
+const COMBOS = [
+  {cls:'dagger', a:'hide',      b:'backstab', n:'暗影连击', d:'背刺伤害 +25%',       flag:'c_shadow'},
+  {cls:'dagger', a:'artery',    b:'ignite',   n:'血火',     d:'对流血目标点燃加伤', flag:'c_bloodfire'},
+  {cls:'spear',  a:'brace',     b:'onestrike',n:'势贯长虹', d:'势满时一枪定 +25%',  flag:'c_surge'},
+  {cls:'spear',  a:'setSpear',  b:'holdGate', n:'铁壁门神', d:'双守时减伤八成半',   flag:'c_wall'},
+  {cls:'bow',    a:'draw',      b:'oneArrow', n:'一矢定音', d:'引弓后一矢 +30%',    flag:'c_aim'},
+  {cls:'bow',    a:'fireArrow', b:'rapid',    n:'火网',     d:'连珠打燃烧目标 +25%', flag:'c_firenet'}
+];
+
+function mch(id, p){
+  const m = run && run.mastery ? run.mastery[id] : null;
+  return (m && m.p===p) ? m.l : 0;
+}
+function brLv(id){ const m = run&&run.mastery?run.mastery[id]:null; return m?m.l:0; }
+
+function syncCombos(){
+  if(!run) return;
+  run.ch = {};
+  COMBOS.forEach(c=>{
+    if(run.cls!==c.cls) return;
+    if(brLv(c.a)>0 && brLv(c.b)>0) run.ch[c.flag] = 1;
+  });
+}
+
+function addMaster(id, path){
+  if(!run || run.sp<=0) return;
+  run.mastery = run.mastery || {};
+  const m = run.mastery[id] || (run.mastery[id] = {p:null, l:0});
+  if(m.p && m.p!==path) return;
+  if(m.l>=2) return;
+  m.p = path; m.l++;
+  run.sp--;
+  syncCombos();
+  addLog('「'+BRANCHES[id][path].n+'」又进一层。','g');
+  renderPanel(UI.panel);
+}
+
+function addRank(id){
+  if(!run || run.sp<=0) return;
+  const rk = run.rank[id]||0;
+  if(rk>=5) return;
+  run.rank[id] = rk+1;
+  run.sp--;
+  addLog(SKILLS[id].name+' 精进一阶。','y');
+  updateTopbar();
+}
+
+function ov(html){ OV.className='show'; OV.innerHTML=`<div class="wrap">${html}</div>`; }
+function hideOv(){ OV.className=''; OV.innerHTML=''; }
+
+function showTitle(){
+  const codex = W.codex||[];
+  const u = unlocks();
+  const m = loadMeta();
+  const si = saveInfo();
+  const codexN = Object.keys(m.codex||{}).length;
+  const gearN = Object.keys(m.gear||{}).length;
+  ov(`
+    <div class="tag">从黄巾到官渡 · 十六年</div>
+    <h1>无名刀客</h1>
+    <p class="lead">
+      你不是将军，没有兵。<br>
+      你不做官，没有名。<br>
+      你只有一把刀，和一具会死的身子。<br><br>
+      但有些事，只能由不在册的人去做。
+    </p>
+    <div class="opt" id="btn-start"><div class="t">入世</div><div class="d">184 年，二月。长社有火。</div></div>
+    ${si? `<div class="opt" id="btn-cont"><div class="t">续上一局</div><div class="d">${si.year} 年 · ${si.cls} Lv.${si.lv} · ${THEME_NAME[si.theme]||'野地'}</div></div>`:''}
+    <div class="opt" id="btn-set"><div class="t">设置</div><div class="d">音量 ${SET.mute?'静音':Math.round(SET.vol*100)+'%'} · 难度 ${diffName()}</div></div>
+    <div class="opt" id="btn-codex"><div class="t">史册</div><div class="d">人物 ${codexN} · 器物 ${gearN} · 结局 ${u.endings} · 通关 ${u.won}</div></div>
+    <p class="lead" style="margin-top:18px;font-size:12.5px;color:#7b7160">
+      ${(codexN+gearN)? `史册已记人物 ${codexN}、器物 ${gearN}。` : '史册还空着。'}
+      ${u.starters.length? ` 已解锁起手兵器：${u.starters.map(id=>ITEMS[id].name).join('、')}。` : ''}
+    </p>
+    <p class="lead" style="font-size:12px;color:#6b6152">
+      W A S D / Q E Z C 八向移动　F 普通攻击（不开销）　1—6 用手段<br>
+      左键点射程内的敌人直接砍；往敌人格子上走也算一刀。<br>
+      悬停看敌情，右键看详情。I 状态　B 背包　K 加点　J 行止　Esc 设置<br>
+      完事后走到绿色「出」格，按 <b style="color:#c8963e">G</b> 撤离。死了就是死了。
+    </p>
+  `);
+  document.getElementById('btn-start').onclick = ()=>{ sfx('click'); showClassPick(); };
+  const bc=document.getElementById('btn-cont');
+  if(bc) bc.onclick = ()=>{ sfx('click'); if(!loadGame()){ showTitle(); } };
+  document.getElementById('btn-set').onclick = ()=>{ sfx('click'); showSettings(); };
+  document.getElementById('btn-codex').onclick = ()=>{ sfx('click'); showCodex(); };
+}
+
+function showClassPick(clsBack){
+  const u = unlocks();
+  const cs = Object.values(CLASSES).map(c=>`
+    <div class="cls" data-c="${c.id}">
+      <div class="n">${c.name}</div>
+      <div class="w">${c.weapon} · 血气 ${c.hp} · 力 ${c.atk}</div>
+      <div class="s">${c.bio}</div>
+    </div>`).join('');
+  ov(`
+    <div class="tag">择一路</div>
+    <h2>你带什么出手？</h2>
+    <div class="clsgrid">${cs}</div>
+    ${u.starters.length? `<p class="lead" style="font-size:12.5px;color:#c8963e">史册里攒下的起手兵器，可在下一步换上。</p>`:''}
+    <p class="lead" style="font-size:12px;color:#6b6152">三条路线，三种死法。难度：${diffName()}。</p>
+    <div class="btn" id="btn-back">回标题</div>
+  `);
+  document.getElementById('btn-back').onclick = ()=>showTitle();
+  [...document.querySelectorAll('[data-c]')].forEach(el=>{
+    el.onclick = ()=>{
+      sfx('click');
+      const id = el.dataset.c;
+      const st = unlocks().starters;
+      if(st.length) showStartGear(id, st);
+      else { startRun(id); W.evIdx=0; showEvent(0); }
+    };
+  });
+}
+
+/* 起手兵器：只用解锁过的，不让老玩家凭累计属性碾压 */
+function showStartGear(clsId, starters){
+  const cls = CLASSES[clsId];
+  const defW = clsId==='dagger'?'dagg':(clsId==='bow'?'bow0':'spear0');
+  const rows = starters.map(id=>{
+    const it = ITEMS[id];
+    return `<div class="opt" data-g="${id}"><div class="t">${it.name}</div><div class="d">${it.type==='weapon'?'兵器':'甲胄'} · ${itemStat(mkGear(id,'legend'))}</div></div>`;
+  }).join('');
+  ov(`
+    <div class="tag">起手</div>
+    <h2>${cls.name}带什么</h2>
+    ${rows}
+    <div class="opt" data-g=""><div class="t">还用原来的</div><div class="d">${ITEMS[defW].name} · ${ITEMS.cloth.name}</div></div>
+    <div class="btn" id="btn-back2">退回</div>
+  `);
+  document.getElementById('btn-back2').onclick = ()=>showClassPick();
+  [...document.querySelectorAll('[data-g]')].forEach(el=>{
+    el.onclick = ()=>{
+      sfx('click');
+      startRun(clsId, el.dataset.g || null);
+      W.evIdx=0; showEvent(0);
+    };
+  });
+}
+
+/* ===== 设置 ===== */
+function showSettings(fromBattle){
+  const inBattle = !!(run && G && !G.over);
+  const volBtns = [0,0.25,0.5,0.75,1].map(v=>`<span class="tab ${Math.abs(SET.vol-v)<0.01?'on':''}" data-vol="${v}">${Math.round(v*100)}%</span>`).join('');
+  const difBtns = Object.keys(DIFF).map(k=>`<span class="tab ${SET.diff===k?'on':''}" data-dif="${k}">${DIFF[k].n}</span>`).join('');
+  const spdBtns = [[0.6,'慢'],[1,'常'],[1.8,'快']].map(([v,n])=>`<span class="tab ${Math.abs(SET.speed-v)<0.01?'on':''}" data-spd="${v}">${n}</span>`).join('');
+  const u = unlocks();
+  ov(`
+    <div class="tag">设置</div>
+    <h2>声响与难处</h2>
+    <div class="row"><span>音量</span><div>${volBtns}</div></div>
+    <div class="row"><span>静音</span><span class="tab ${SET.mute?'on':''}" id="sw-mute">${SET.mute?'已静音':'开'}</span></div>
+    <div class="row"><span>难度</span><div>${difBtns}</div></div>
+    <div class="row"><span>节奏</span><div>${spdBtns}</div></div>
+    <div class="row"><span>挑战模式（敌更硬，名望更高）</span><span class="tab ${SET.challenge?'on':''} ${u.challenge?'':'dead'}" id="sw-ch">${u.challenge?(SET.challenge?'开':'关'):'通关一次解锁'}</span></div>
+    <div class="row"><span>自动存档</span><span class="tab on">每回合</span></div>
+    <div class="row"><span>存档</span>
+      <div><span class="tab" id="btn-save">手动存</span> <span class="tab ${hasSave()?'':'dead'}" id="btn-load">读档</span></div></div>
+    <h3 style="font-size:13px;letter-spacing:2px;color:#8d8069;margin:14px 0 6px">操作</h3>
+    <p class="lead" style="font-size:12px;line-height:1.9">
+      WASD/QEZC 八向移动 · F 进入普攻瞄准 · 左键点敌直接砍 · 走上去也算一刀<br>
+      1—6 手段（瞄准时方向键移框，回车确认，Esc 取消）· Tab/I 状态 · B 行囊 · K 加点 · J 行止<br>
+      右键敌人看详情 · 悬停看粗略敌情 · 空格等待 · R 喘息 · G 出口撤离
+    </p>
+    <div class="btn" id="btn-close">收起</div>
+    ${inBattle? `<div class="btn" id="btn-quit" style="border-color:#b8563a;color:#b8563a;margin-top:8px">退出战斗</div>`:''}
+    ${!inBattle? `<div class="btn" id="btn-reset" style="margin-top:8px">重开一世</div>`:''}
+  `);
+  [...document.querySelectorAll('[data-vol]')].forEach(el=>el.onclick=()=>{ SET.vol=parseFloat(el.dataset.vol); SET.mute=false; saveSet(); sfx('click'); showSettings(fromBattle); });
+  [...document.querySelectorAll('[data-dif]')].forEach(el=>el.onclick=()=>{ SET.diff=el.dataset.dif; saveSet(); sfx('click'); showSettings(fromBattle); });
+  [...document.querySelectorAll('[data-spd]')].forEach(el=>el.onclick=()=>{ SET.speed=parseFloat(el.dataset.spd); saveSet(); sfx('click'); showSettings(fromBattle); });
+  document.getElementById('sw-mute').onclick=()=>{ SET.mute=!SET.mute; saveSet(); showSettings(fromBattle); };
+  const swch=document.getElementById('sw-ch');
+  if(swch) swch.onclick=()=>{ if(!unlocks().challenge) return; SET.challenge=!SET.challenge; saveSet(); sfx('click'); showSettings(fromBattle); };
+  document.getElementById('btn-save').onclick=()=>{
+    const ok=saveGame();
+    addLog(ok?'已记下这一笔。':'此刻存不了。', ok?'y':'r');
+    showSettings(fromBattle);
+  };
+  const bl=document.getElementById('btn-load');
+  if(bl) bl.onclick=()=>{ if(loadGame()){ addLog('翻回那一页。','y'); } else { addLog('没有可读的档。','r'); } };
+  document.getElementById('btn-close').onclick=()=>{ hideOv(); if(inBattle){ UI.paused=false; renderAll(); } else showTitle(); };
+  const bq=document.getElementById('btn-quit');
+  if(bq) bq.onclick=()=>{
+    bq.textContent='确定放弃这一局？再点一次';
+    bq.style.background='#2a1512';
+    bq.onclick=()=>{ hideOv(); G=null; UI.paused=false; showClassPick(); };
+  };
+  const br2=document.getElementById('btn-reset');
+  if(br2) br2.onclick=()=>{ hideOv(); G=null; run=null; showClassPick(); };
+}
+
+/* ===== 史册：元进度一览 ===== */
+function showCodex(){
+  const m=loadMeta();
+  const codexRows = Object.keys(m.codex||{}).filter(k=>!k.startsWith('kill_')).map(k=>{
+    const mb = MOBS[k];
+    return `<div class="row"><span>${mb?mb.name:k}</span><b>已遇</b></div>`;
+  }).join('') || '<div class="row"><span>还没遇上什么人</span><b>—</b></div>';
+  const bossRows = Object.keys(m.codex||{}).filter(k=>k.startsWith('kill_')).map(k=>{
+    const id=k.replace('kill_','');
+    const nm={huaxiong:'华雄',lvbu:'吕布',dongzhuo:'董卓'}[id]||id;
+    return `<div class="row"><span>${nm}</span><b>已斩</b></div>`;
+  }).join('') || '<div class="row"><span>名将一个没死</span><b>—</b></div>';
+  const gearRows = Object.keys(m.gear||{}).map(id=>{
+    const it=ITEMS[id]; return `<div class="row"><span>${it?it.name:id}</span><b>已得</b></div>`;
+  }).join('') || '<div class="row"><span>没捡过什么</span><b>—</b></div>';
+  const evRows = Object.keys(m.events||{}).map(id=>{
+    const ev=EVENTS.find(e=>e.id===id); return `<div class="row"><span>${ev?ev.title:id}</span><b>已历</b></div>`;
+  }).join('') || '<div class="row"><span>史册空白</span><b>—</b></div>';
+  const winRows = Object.keys(CLASSES).map(k=>{
+    const n=(m.wins||{})[k]||0; return `<div class="row"><span>${CLASSES[k].name}</span><b>通关 ${n}</b></div>`;
+  }).join('');
+  const endRows = ['kill_lvbu','kill_dz','han','liu','lv','none','cao','yuan','split'].map(k=>{
+    const n={kill_lvbu:'白门无叹',kill_dz:'相国授首',han:'汉祚未绝',liu:'徐州归刘',lv:'温侯未死',none:'史书无名',cao:'北方归曹',yuan:'河北未破',split:'群雄未定'}[k];
+    return `<div class="row"><span>${n}</span><b>${(m.endings||{})[k]?'已见':'未见'}</b></div>`;
+  }).join('');
+  const u=unlocks();
+  ov(`
+    <div class="tag">史册</div>
+    <h2>你见过的东西</h2>
+    <h3 style="font-size:13px;letter-spacing:2px;color:#8d8069;margin:10px 0 4px">人物</h3>
+    ${bossRows}${codexRows}
+    <h3 style="font-size:13px;letter-spacing:2px;color:#8d8069;margin:14px 0 4px">器物</h3>
+    ${gearRows}
+    <h3 style="font-size:13px;letter-spacing:2px;color:#8d8069;margin:14px 0 4px">事件</h3>
+    ${evRows}
+    <h3 style="font-size:13px;letter-spacing:2px;color:#8d8069;margin:14px 0 4px">战绩</h3>
+    ${winRows}
+    <h3 style="font-size:13px;letter-spacing:2px;color:#8d8069;margin:14px 0 4px">结局</h3>
+    ${endRows}
+    <p class="lead" style="font-size:12px;color:#6b6152;margin-top:14px">
+      ${u.challenge?'挑战模式已开。':'任意职业通一次关，即开挑战模式。'}
+      永久成长只开新内容，不给新属性。
+    </p>
+    <div class="btn" id="btn-back3">回标题</div>
+  `);
+  document.getElementById('btn-back3').onclick=()=>showTitle();
+}
+
+function showEvent(idx){
+  if(idx >= EVENTS.length){ showEnding(); return; }
+  const ev0 = EVENTS[idx];
+  if(ev0.req && !ev0.req(W)){ showEvent(idx+1); return; }
+  W.evIdx = idx;
+  const ev = ev0;
+  W.year = ev.y;
+  const intro = typeof ev.intro==='function' ? ev.intro(W) : ev.intro;
+  const pool = ev.choices.map((c,i)=>({c,i})).filter(o=>!o.c.req || o.c.req(W));
+  const usable = pool.length ? pool : [{c:ev.choices[0], i:0}];
+  const choices = usable.map(o=>{
+    const c = o.c, i = o.i;
+    return `
+    <div class="opt" data-i="${i}">
+      <div class="t">${c.t}</div>
+      <div class="d">${c.d}</div>
+      <div class="m">${taskMeta(c.task)}</div>
+    </div>`;
+  }).join('');
+  ov(`
+    <div class="tag">${ev.y} 年 ${ev.m} 月</div>
+    <h2>${ev.title}</h2>
+    <p class="lead">${intro}</p>
+    ${choices}
+  `);
+  [...document.querySelectorAll('[data-i]')].forEach(el=>{
+    el.onclick = ()=>{
+      hideOv();
+      const i = parseInt(el.dataset.i);
+      const ch = ev.choices[i];
+      startTask(ch, ev.id, i);
+      // 目标类任务的特殊处理
+      postTaskInit(ch);
+    };
+  });
+}
+
+function taskMeta(t){
+  const o = t.obj;
+  let s='';
+  if(o.type==='burn') s='纵火 '+o.need+' 处';
+  else if(o.type==='protect') s='守粮 '+o.need+' 堆';
+  else if(o.type==='kill') s='斩 '+(o.eliteName||'目标');
+  else if(o.type==='steal') s='取 '+o.item;
+  else if(o.type==='escort') s='接人，带出去';
+  else if(o.type==='clear') s='清场';
+  return `目标：${s}　赏：名望+${t.reward.fame||0}`;
+}
+
+function postTaskInit(ch){
+  const o = ch.task.obj;
+  if(o.type==='kill' && o.boss){
+    const bt = G.mobs.find(m=>m.boss===o.boss);
+    if(bt){ bt.isTarget=true; addLog('要找的人在前头。','y'); }
+    renderAll();
+    return;
+  }
+  if(o.type==='kill'){
+    let t = G.mobs.find(m=>m.type==='elite' && !m.dead);
+    if(!t && G.mobs.length){
+      const old = G.mobs.pop();
+      t = mkMob('elite', old.x, old.y);
+      G.mobs.push(t);
+    }
+    if(t){ t.isTarget=true; t.name=o.eliteName||'目标'; t.max=t.hp; }
+    addLog('目标就在这座营里。','y');
+  }
+  if(o.type==='steal' || o.type==='escort'){
+    addLog(o.type==='steal'? '东西在最深处。拿了走。':'人在最深处。接上就走。','y');
+  }
+  if(o.type==='protect'){
+    addLog('粮食着不得。','y');
+  }
+  renderAll();
+}
+
+/* ===== 结果 ===== */
+function showResult(){
+  const r = G.result;
+  const gradeMap = {
+    success:['成','干净'],
+    partial:['半','留痕'],
+    failure:['败','未成'],
+    aborted:['退','狼狈']
+  };
+  const g = gradeMap[r.grade] || ['—',''];
+  const col = r.grade==='success'? '#6f9e6a' : r.grade==='partial'? '#c8963e' : '#b8563a';
+  ov(`
+    <div class="tag">残局</div>
+    <h2 style="color:${col}">${g[0]} · ${g[1]}</h2>
+    <p class="lead">${r.text}</p>
+    <div class="stats">
+      <div class="st"><span>目标</span><b>${r.done?'已了':'未了'}</b></div>
+      <div class="st"><span>撤出</span><b>${r.escaped?'是':'否'}</b></div>
+      <div class="st"><span>警觉</span><b>${r.alarm}</b></div>
+      <div class="st"><span>手上人命</span><b>${r.kills}</b></div>
+      <div class="st"><span>名望</span><b>${run.fame}</b></div>
+      <div class="st"><span>回合</span><b>${r.turn}</b></div>
+      <div class="st"><span>所得</span><b>经验 +${r.exp||0}${run.lastUps?`　升至 Lv.${run.lv}`:''}</b></div>
+    </div>
+    <div class="btn" id="btn-next">继续</div>
+  `);
+  document.getElementById('btn-next').onclick = ()=>{
+    hideOv();
+    run.lastGain = 0; run.lastUps = 0;
+    G=null;
+    showReward();
+  };
+}
+
+/* ===== 成长：经验驱动，不再按次数白送等级 ===== */
+function expNeed(lv){ return 24 + (lv-1)*16; }
+
+const GROWTH = {
+  dagger:{hp:5, atk:2, def:1, eva:2, st:4},
+  spear: {hp:9, atk:1, def:2, eva:1, st:6},
+  bow:   {hp:6, atk:2, def:1, eva:1, st:5}
+};
+
+function growLevel(){
+  const g = GROWTH[run.cls] || GROWTH.dagger;
+  run.basehp += g.hp;
+  run.maxhp = run.basehp + gearHp();
+  run.hp = Math.min(run.maxhp, run.hp + Math.round(g.hp*0.7));
+  run.atk += g.atk;
+  run.def += g.def;
+  run.eva += g.eva;
+  run.stmax += g.st;
+  run.st = run.stmax;
+  run.resMax += 2;
+  run.sp++;
+}
+
+function addExp(n){
+  if(!run || !n) return;
+  n = Math.round(n);
+  run.exp = (run.exp||0) + n;
+  run.lastGain = (run.lastGain||0) + n;
+  let ups = 0;
+  while(run.exp >= expNeed(run.lv)){
+    run.exp -= expNeed(run.lv);
+    run.lv++;
+    growLevel();
+    ups++;
+  }
+  if(ups) run.lastUps = (run.lastUps||0) + ups;
+}
+
+function showDeath(){
+  const line = `建安${W.year}年，有客死于${G.cfg.place||'乱军之中'}，无名。`;
+  const codex = loadCodex();
+  codex.push({y:W.year, line, cls:run.cls});
+  saveCodex(codex);
+  W.codex = codex;
+  ov(`
+    <div class="tag">史册</div>
+    <h2>你死在这一夜</h2>
+    <div class="epi">${line}</div>
+    <p class="lead" style="font-size:13px">
+      ${run.kills} 人死在你手上。<br>
+      ${W.year===184? '你还没看到这个天下变成什么样。' : '史书上不会留下你的名字——但某些事，因为你，晚发生了几年。'}
+    </p>
+    <div class="btn" id="btn-again">再来一世</div>
+  `);
+  document.getElementById('btn-again').onclick = ()=>{
+    hideOv();
+    G=null;
+    showClassPick();
+  };
+}
+
+/* ===== 结局 ===== */
+function showEnding(){
+  const f = W.factions;
+  const clean = Object.keys(W.flags).filter(k=>k.startsWith('last_clean_')).length;
+  const has = k=>!!W.flags[k];
+  let key, title, body;
+
+  if(has('kill_lvbu')){
+    key='kill_lvbu'; title='白门无叹';
+    body='吕布死在你还刀的那一夜。曹操少了最怕的那个人，徐州提前几年归了他。史书不会记你的名字，只记了他的死期。';
+  } else if(has('kill_dongzhuo')){
+    key='kill_dz'; title='相国授首';
+    body='郿坞的火烧了两天。董卓死了，长安乱了半年，然后李傕、郭汜又打起来。你换掉的不是结局，只是让乱世换了个面孔。';
+  } else if(f.han.trust>=68 && f.han.sup>=52){
+    key='han'; title='汉祚未绝';
+    body='天子还坐在那把椅子上。曹操没有称公，袁绍没有南下。你替汉室挡下的这几年，让这个朝代多撑了一代人。';
+  } else if(f.liu.sup>=56){
+    key='liu'; title='徐州归刘';
+    body='刘备没有丢徐州。百姓认他，你替他守过城门。三分之后，蜀汉的版图比史书上的大一些。';
+  } else if(has('xiapi_1') || f.lv.mil>=60){
+    key='lv'; title='温侯未死';
+    body='吕布还活着。他不是能治天下的人，但他能让所有人更晚统一。这也许才是你真正做过的事。';
+  } else if(clean < 2){
+    key='none'; title='史书无名';
+    body='十六年里，你活下来了，但天下没因你动过一寸。你只是那个时代里一个会杀人的普通人。';
+  } else if(f.cao.mil >= f.yuan.mil + 10){
+    key='cao'; title='北方归曹';
+    body='官渡之后，袁绍崩了。你烧的那把火，或者你守住的那堆粮，让这一天早到了几年。三分之势，已成。';
+  } else if(f.yuan.mil >= f.cao.mil + 5){
+    key='yuan'; title='河北未破';
+    body='袁绍没有崩。北方还是他的。天下分裂的时间，因为你，又长了十年。';
+  } else {
+    key='split'; title='群雄未定';
+    body='谁也没赢。天下碎成七八块，谁也吞不下谁。你在其中活过，像很多人一样，然后死了。';
+    }
+
+  metaWin(run.cls, key);
+  ov(`
+    <div class="tag">200 年 · 官渡之后</div>
+    <h1 style="font-size:28px;letter-spacing:4px">${title}</h1>
+    <p class="lead">${body}</p>
+    <div class="stats">
+      <div class="st"><span>曹操</span><b>${Math.round(f.cao.mil)}</b></div>
+      <div class="st"><span>袁绍</span><b>${Math.round(f.yuan.mil)}</b></div>
+      <div class="st"><span>孙氏</span><b>${Math.round(f.sun.mil)}</b></div>
+      <div class="st"><span>刘备</span><b>${Math.round(f.liu.mil)}</b></div>
+      <div class="st"><span>汉室信任</span><b>${Math.round(f.han.trust)}</b></div>
+      <div class="st"><span>吕布信任</span><b>${Math.round(f.lv.trust)}</b></div>
+    </div>
+    <div class="epi">你的那本书，翻到这一页就停住了。</div>
+    <div class="btn" id="btn-restart">重开一世</div>
+  `);
+  document.getElementById('btn-restart').onclick = ()=>{
+    hideOv(); G=null; showClassPick();
+  };
+}
+
+
+/* ===== 第五批：设置 / 元进度 / 存档 / 音效 ===== */
+const SET_KEY='wmdk_set', META_KEY='wmdk_meta', SAVE_KEY='wmdk_save';
+let SET = {vol:0.5, mute:false, speed:1, diff:'normal', challenge:false};
+const DIFF = {
+  easy:  {n:'轻松', hp:0.82, atk:0.86, exp:1.25},
+  normal:{n:'标准', hp:1.00, atk:1.00, exp:1.00},
+  hard:  {n:'苦战', hp:1.24, atk:1.14, exp:1.35}
+};
+function loadSet(){
+  try{ const v=JSON.parse(localStorage.getItem(SET_KEY)||'{}');
+    Object.keys(SET).forEach(k=>{ if(v[k]!==undefined) SET[k]=v[k]; });
+  }catch(e){}
+}
+function saveSet(){ try{ localStorage.setItem(SET_KEY, JSON.stringify(SET)); }catch(e){} }
+
+function blankMeta(){ return {codex:{}, gear:{}, events:{}, wins:{}, endings:{}, best:0}; }
+function loadMeta(){
+  const m=blankMeta();
+  try{ const v=JSON.parse(localStorage.getItem(META_KEY)||'{}');
+    Object.keys(m).forEach(k=>{ if(v[k]!==undefined) m[k]=v[k]; });
+  }catch(e){}
+  return m;
+}
+function saveMeta(m){ try{ localStorage.setItem(META_KEY, JSON.stringify(m)); }catch(e){} }
+function metaAddMany(bucket, keys){
+  const m=loadMeta(); m[bucket]=m[bucket]||{};
+  let ch=false;
+  (keys||[]).forEach(k=>{ if(k && !m[bucket][k]){ m[bucket][k]=1; ch=true; } });
+  if(ch) saveMeta(m);
+  return m;
+}
+function metaAdd(bucket, key){
+  const m=loadMeta();
+  m[bucket]=m[bucket]||{};
+  if(m[bucket][key]) return m;
+  m[bucket][key]=1;
+  saveMeta(m);
+  return m;
+}
+function metaWin(cls, endingKey){
+  const m=loadMeta();
+  m.wins[cls]=(m.wins[cls]||0)+1;
+  m.endings[endingKey]=1;
+  saveMeta(m);
+  return m;
+}
+/* 解锁：只解锁"新内容/新选择"，不给累计属性 */
+function unlocks(){
+  const m=loadMeta();
+  const won=Object.keys(m.wins||{}).length;
+  const starters=[];
+  if(won>=1) starters.push('huadao');
+  if(m.codex['kill_dongzhuo']) starters.push('dongarmor');
+  if(m.codex['kill_lvbu']) starters.push('fangtian');
+  return {won, starters, challenge: won>=1, endings:Object.keys(m.endings||{}).length};
+}
+
+/* ---- 音效：纯合成，无外部素材 ---- */
+let AC=null;
+const SFX = {hit:[230,0.09,0.85], crit:[540,0.13,1], hurt:[150,0.15,0.7], fire:[330,0.2,0.55],
+             win:[460,0.28,0.8], dead:[110,0.3,0.5], click:[700,0.04,0.4]};
+function sfx(kind){
+  if(SET.mute || !SET.vol) return;
+  try{
+    const W2 = window;
+    if(!AC) AC = new (W2.AudioContext || W2.webkitAudioContext)();
+    const pr = SFX[kind] || SFX.hit;
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.type = (kind==='fire') ? 'sawtooth' : 'triangle';
+    o.frequency.value = pr[0];
+    g.gain.value = pr[2]*SET.vol;
+    if(g.gain.exponentialRampToValueAtTime) g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime+pr[1]);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime+pr[1]);
+  }catch(e){}
+}
+
+/* ---- 难度与挑战真正作用于敌人 ---- */
+function applyDiff(o){
+  const d = DIFF[SET.diff] || DIFF.normal;
+  const k = SET.challenge ? {hp:d.hp*1.12, atk:d.atk*1.08, exp:d.exp*1.1} : d;
+  (o.mobs||[]).forEach(m=>{
+    if(m.rel!=='hostile') return;
+    m.max = Math.max(6, Math.round(m.max*k.hp));
+    m.hp = m.max;
+    m.atk = Math.round(m.atk*k.atk*10)/10;
+    m.expv = Math.round((m.expv||1)*k.exp);
+  });
+}
+function diffName(){ const d=DIFF[SET.diff]||DIFF.normal; return d.n + (SET.challenge?' · 挑战':''); }
+
+/* ---- 存档 ---- */
+function saveGame(){
+  if(!run || !G || G.over) return false;
+  try{
+    const g = {tiles:G.tiles, props:G.props, items:G.items, mobs:G.mobs,
+      entry:G.entry, exit:G.exit, cfg:G.cfg, px:G.px, py:G.py,
+      explored:G.explored, alarm:G.alarm, turn:G.turn, over:G.over, atExit:G.atExit,
+      obj:G.obj, objDone:G.objDone, reinforceTick:G.reinforceTick,
+      log:(G.log||[]).slice(-14), smoke:G.smoke, result:G.result};
+    localStorage.setItem(SAVE_KEY, JSON.stringify({W:{year:W.year, evIdx:W.evIdx, factions:W.factions, flags:W.flags, codex:W.codex}, run, G:g, t:Date.now()}));
+    return true;
+  }catch(e){ return false; }
+}
+function hasSave(){
+  try{ const s=localStorage.getItem(SAVE_KEY); return !!s && s.length>40; }catch(e){ return false; }
+}
+function saveInfo(){
+  try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); if(!s) return null;
+    return {year:s.W.year, cls:s.run.name, lv:s.run.lv, theme:(s.G.cfg&&s.G.cfg.theme)||''};
+  }catch(e){ return null; }
+}
+function loadGame(){
+  try{
+    const snap = JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
+    if(!snap || !snap.G || !snap.run) return false;
+    W = snap.W; run = snap.run;
+    const g = snap.G;
+    G = {tiles:g.tiles, props:g.props||[], items:g.items||[], mobs:g.mobs||[],
+      entry:g.entry, exit:g.exit, cfg:g.cfg, px:g.px, py:g.py,
+      visible:Array.from({length:GH},()=>Array(GW).fill(false)),
+      explored:g.explored||Array.from({length:GH},()=>Array(GW).fill(false)),
+      alarm:g.alarm||0, turn:g.turn||0, over:false, atExit:g.atExit||false,
+      obj:g.obj, objDone:g.objDone||0, reinforceTick:0, log:g.log||[],
+      smoke:g.smoke||null, result:g.result||null, fx:[], toast:null};
+    if(!G.log.length) G.log=[];
+    UI.mode='move'; UI.pending=null; UI.cursor=null; UI.paused=false; UI.panel=null;
+    const savedLog = G.log || [];
+    hideOv(); clearLog();
+    savedLog.forEach(l=>addLog(l.s!==undefined?l.s:l.t, l.c));
+    computeFOV(); renderAll();
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ===== 存档 ===== */
+function loadCodex(){
+  try{ return JSON.parse(localStorage.getItem('wmdk_codex')||'[]'); }catch(e){ return []; }
+}
+function saveCodex(c){
+  try{ localStorage.setItem('wmdk_codex', JSON.stringify(c.slice(-40))); }catch(e){}
+}
+
+/* ===== 启动 ===== */
+loadSet();
+initWorld();
+W.codex = loadCodex();
+
+if(typeof requestAnimationFrame==='function'){
+  const step=()=>{
+    requestAnimationFrame(step);
+    if(!G || UI.paused) return;
+    renderCanvas();
+  };
+  requestAnimationFrame(step);
+}
+
+showTitle();
+</script>
+</body>
+</html>
